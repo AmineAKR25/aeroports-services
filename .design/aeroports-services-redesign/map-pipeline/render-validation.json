@@ -1,0 +1,58 @@
+[
+ {
+  "width": 1272,
+  "rendered": 18,
+  "overlaps": 0,
+  "pairs": [],
+  "minFontPx": 25,
+  "tinyLabels": [],
+  "svgWidth": 1272,
+  "containerScrollW": 1272,
+  "svgOverflows": false,
+  "docScrollW": 1272,
+  "viewport": 1272,
+  "case": "coverage-1440"
+ },
+ {
+  "width": 700,
+  "rendered": 18,
+  "overlaps": 0,
+  "pairs": [],
+  "minFontPx": 14,
+  "tinyLabels": [],
+  "svgWidth": 700,
+  "containerScrollW": 700,
+  "svgOverflows": false,
+  "docScrollW": 700,
+  "viewport": 700,
+  "case": "heroB-1440"
+ },
+ {
+  "width": 347,
+  "rendered": 0,
+  "overlaps": 0,
+  "pairs": [],
+  "minFontPx": 999,
+  "tinyLabels": [],
+  "svgWidth": 347,
+  "containerScrollW": 347,
+  "svgOverflows": false,
+  "docScrollW": 500,
+  "viewport": 347,
+  "case": "mobile-375"
+ },
+ {
+  "width": 360,
+  "rendered": 0,
+  "overlaps": 0,
+  "pairs": [],
+  "minFontPx": 999,
+  "tinyLabels": [],
+  "svgWidth": 360,
+  "containerScrollW": 360,
+  "svgOverflows": false,
+  "docScrollW": 500,
+  "viewport": 360,
+  "case": "zoom-400"
+ }
+]

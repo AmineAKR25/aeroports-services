@@ -1,0 +1,609 @@
+/* ============================================================================
+   AÉROPORTS SERVICES — DESIGN TOKENS   ·   rev. 3
+
+   REV. 3 — Direction A (Nuit) approved for Phase V. Theme decoupled from the
+   direction: LIGHT is the default, with a visible persistent toggle; scenes
+   stay dark in both themes (§4). Nothing else in rev. 2 changed.
+
+   WHAT CHANGED IN REV. 2
+   1. The visual direction is reopened. Rev. 1 prohibited shadows, gradients and
+      perspective outside three dark bands. Those prohibitions are removed and
+      replaced with a full elevation, depth and perspective system (§5–§7).
+   2. Theme default is NOT decided here. It follows the owner's choice between
+      Direction A and Direction B — see DEFAULT SWITCH below.
+   3. Contrast figures reconciled against DESIGN_BRIEF.md. Both documents now
+      cite one canonical set; every value below was computed, not estimated.
+
+   STRUCTURE — two layers, per DESIGN_BRIEF.md rev. 2:
+     · Information layer — signage discipline. Typography, grid, hierarchy,
+       colour-as-meaning, tabular data, reading measure. Rigorous.
+     · Presentation layer — cinematic staging. Depth, elevation, light,
+       perspective, motion, scene transitions. Permitted where it serves the
+       story; governed by the information layer's constraints, not by a ban.
+
+   Stack: Tailwind v4, CSS-first. Installed into src/app/globals.css in Phase V.
+   ============================================================================ */
+
+
+/* ============================================================================
+   THEME DEFAULT — RESOLVED  ·  rev. 3
+
+   Direction A (Nuit) is the approved visual direction. Per the owner's
+   condition 2, the visual direction is DECOUPLED from the theme preference:
+
+     · LIGHT is the site's initial default theme. Ship as written below.
+     · A clearly visible toggle switches to dark. Manual choice persists.
+     · No flash of the wrong theme on load (blocking pre-paint script).
+     · Direction A's cinematic scenes stay DARK AND ATMOSPHERIC IN BOTH
+       THEMES — see §4. They are not theme-dependent surfaces.
+
+   That last rule is what makes the decoupling coherent: the cinematic register
+   belongs to the *scenes*, not to the page ground. A light document with dark
+   staged scenes is Direction A at its default; toggling to dark extends the
+   scene ground across the whole document.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   1. PRIMITIVES — AVIATION BLUE RAMP
+   Hue 198.6°, taken from the logo file's measured primary. `--blue-500` IS
+   `#0180B9`, unaltered.
+
+   Reconciling the three archive blues:
+     #0180B9  logo primary, 1463px  → --blue-500. Authoritative.
+     #004A7F  logo deep,     313px  → between --blue-700/800. Authoritative.
+     #0d5195  meta theme-color      → NOT adopted. Identical on all 27 pages
+              including the Botswana safari and Santorini hotel demos, which
+              indicates a Kallyas/Elementor theme default rather than a brand
+              decision. The two blues inside the logo file have provenance.
+   --------------------------------------------------------------------------- */
+:root {
+  --blue-50:  #EEF9FE;
+  --blue-100: #D9F1FD;
+  --blue-200: #AEE2F9;
+  --blue-300: #6ECDF7;
+  --blue-400: #24B7F9;
+  --blue-500: #0180B9;   /* THE LOGO BLUE */
+  --blue-600: #016998;
+  --blue-700: #01547A;
+  --blue-800: #00415E;
+  --blue-900: #023146;
+  --blue-950: #021D2A;
+
+  /* Cool slate neutrals — never warm grey, which would pull toward Scandinavian. */
+  --slate-0:   #FFFFFF;
+  --slate-25:  #FAFAFA;
+  --slate-50:  #F1F4F6;
+  --slate-100: #E3E8ED;
+  --slate-200: #CBD3DA;
+  --slate-300: #A9B4C0;
+  --slate-400: #78838F;
+  --slate-500: #6B7783;
+  --slate-600: #4B5661;
+  --slate-700: #3D4852;
+  --slate-800: #1C242C;
+  --slate-850: #10161D;
+  --slate-900: #0B1219;   /* dark scene ground */
+  --slate-950: #080B0F;   /* dark page ground */
+  --slate-ink: #0B0F14;   /* light-theme body text */
+}
+
+/* ---------------------------------------------------------------------------
+   CANONICAL CONTRAST TABLE — the single source of truth
+   Cited identically in DESIGN_BRIEF.md. WCAG 2.x relative luminance, computed.
+
+     #0180B9 on #FFFFFF ........  4.38:1   AA-large / UI only
+     #0180B9 on #FAFAFA ........  4.20:1   AA-large / UI only
+     #0180B9 on #080B0F ........  4.50:1   AA-large / UI only
+     #0180B9 on #0B1219 ........  4.30:1   AA-large / UI only
+     #01547A on #FAFAFA ........  7.89:1   AAA   light link/accent
+     #016998 on #FAFAFA ........  5.79:1   AA
+     #6ECDF7 on #080B0F ........ 11.02:1   AAA   dark link/accent
+     #24B7F9 on #080B0F ........  8.65:1   AAA
+     #0B0F14 on #FAFAFA ........ 18.41:1   AAA   light body
+     #3D4852 on #FAFAFA ........  8.95:1   AAA
+     #6B7783 on #FAFAFA ........  4.38:1   AA-large — never body copy
+     #E8EDF2 on #080B0F ........ 16.74:1   AAA   dark body
+     #A9B4C0 on #080B0F ........  9.37:1   AAA
+     #78838F on #10161D ........  4.71:1   AA
+     #FFFFFF on #0B1219 ........ 18.84:1   AAA   scene display
+     #E8EDF2 on #0B1219 ........ 15.99:1   AAA   scene body
+     #93A1AE on #0B1219 ........  7.13:1   AAA   scene muted
+     #6ECDF7 on #0B1219 ........ 10.53:1   AAA   scene accent
+     #FFFFFF on #01547A ........  8.23:1   AAA   solid action fill
+
+   OPERATIVE CONSEQUENCE: #0180B9 clears 4.5:1 on none of the four grounds, so
+   it is NEVER body text in either theme. It is used for large display type,
+   borders, map node marks — and the focus ring, which it earns by being the
+   only value clearing 3:1 against ALL grounds (4.20 / 4.50 / 4.30).
+   --------------------------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------------------------
+   2. SEMANTIC — LIGHT PALETTE
+   --------------------------------------------------------------------------- */
+:root {
+  --color-bg-primary:      var(--slate-25);
+  --color-bg-secondary:    var(--slate-0);
+  --color-bg-tertiary:     var(--slate-50);
+  --color-bg-inverse:      var(--slate-900);
+
+  --color-text-primary:    var(--slate-ink);
+  --color-text-secondary:  var(--slate-700);
+  --color-text-tertiary:   var(--slate-500);
+  --color-text-inverse:    var(--slate-0);
+  --color-text-link:       var(--blue-700);
+
+  --color-border-primary:   var(--slate-200);
+  --color-border-secondary: var(--slate-100);
+  --color-border-strong:    var(--slate-ink);
+  --color-border-focus:     var(--blue-500);
+
+  --color-accent-primary:        var(--blue-700);
+  --color-accent-primary-hover:  var(--blue-800);
+  --color-accent-primary-active: var(--blue-900);
+  --color-accent-secondary:      var(--blue-500);
+
+  --color-status-success: #0F6B45;
+  --color-status-warning: #8A5A00;
+  --color-status-error:   #B3261E;
+  --color-status-info:    var(--blue-700);
+
+  --color-surface-overlay: rgb(11 18 25 / 0.55);
+
+  --color-map-landmass:    var(--slate-100);
+  --color-map-outline:     var(--slate-300);
+  --color-map-node:        var(--blue-700);
+  --color-map-node-active: var(--blue-500);
+  --color-map-label:       var(--slate-700);
+  --color-map-dim:         var(--slate-300);
+
+  /* Logo needs no treatment on light grounds. */
+  --logo-plate-bg:      transparent;
+  --logo-plate-padding: 0;
+  --logo-plate-radius:  0;
+}
+
+/* ---------------------------------------------------------------------------
+   3. SEMANTIC — DARK PALETTE
+   Body text is #E8EDF2, not pure white: 16.74:1 rather than a harsh 19.6:1.
+   --------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --color-bg-primary:      var(--slate-950);
+  --color-bg-secondary:    var(--slate-850);
+  --color-bg-tertiary:     var(--slate-800);
+  --color-bg-inverse:      var(--slate-25);
+
+  --color-text-primary:    #E8EDF2;
+  --color-text-secondary:  var(--slate-300);
+  --color-text-tertiary:   var(--slate-400);
+  --color-text-inverse:    var(--slate-ink);
+  --color-text-link:       var(--blue-300);
+
+  --color-border-primary:   var(--slate-800);
+  --color-border-secondary: #161D25;
+  --color-border-strong:    var(--slate-300);
+  --color-border-focus:     var(--blue-500);
+
+  --color-accent-primary:        var(--blue-400);
+  --color-accent-primary-hover:  var(--blue-300);
+  --color-accent-primary-active: var(--blue-200);
+  --color-accent-secondary:      var(--blue-500);
+
+  --color-status-success: #4ADE9B;
+  --color-status-warning: #F0B23A;
+  --color-status-error:   #F2A19B;
+  --color-status-info:    var(--blue-300);
+
+  --color-surface-overlay: rgb(4 6 9 / 0.72);
+
+  --color-map-landmass:    rgb(1 128 185 / 0.10);
+  --color-map-outline:     #2FA8DC;
+  --color-map-node:        var(--blue-300);
+  --color-map-node-active: #FFFFFF;
+  --color-map-label:       var(--slate-300);
+  --color-map-dim:         var(--slate-600);
+
+  /* The logo's wordmark is pure black and disappears on dark grounds. The
+     header reserves a light plate for it. This is a SURFACE decision — the PNG
+     is untouched, so instruction 1 holds and no approval is blocked. */
+  --logo-plate-bg:      var(--slate-25);
+  --logo-plate-padding: var(--space-2) var(--space-3);
+  --logo-plate-radius:  var(--radius-md);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg-primary:      var(--slate-950);
+    --color-bg-secondary:    var(--slate-850);
+    --color-bg-tertiary:     var(--slate-800);
+    --color-bg-inverse:      var(--slate-25);
+    --color-text-primary:    #E8EDF2;
+    --color-text-secondary:  var(--slate-300);
+    --color-text-tertiary:   var(--slate-400);
+    --color-text-inverse:    var(--slate-ink);
+    --color-text-link:       var(--blue-300);
+    --color-border-primary:   var(--slate-800);
+    --color-border-secondary: #161D25;
+    --color-border-strong:    var(--slate-300);
+    --color-border-focus:     var(--blue-500);
+    --color-accent-primary:        var(--blue-400);
+    --color-accent-primary-hover:  var(--blue-300);
+    --color-accent-primary-active: var(--blue-200);
+    --color-accent-secondary:      var(--blue-500);
+    --color-status-success: #4ADE9B;
+    --color-status-warning: #F0B23A;
+    --color-status-error:   #F2A19B;
+    --color-status-info:    var(--blue-300);
+    --color-surface-overlay: rgb(4 6 9 / 0.72);
+    --color-map-landmass:    rgb(1 128 185 / 0.10);
+    --color-map-outline:     #2FA8DC;
+    --color-map-node:        var(--blue-300);
+    --color-map-node-active: #FFFFFF;
+    --color-map-label:       var(--slate-300);
+    --color-map-dim:         var(--slate-600);
+    --logo-plate-bg:      var(--slate-25);
+    --logo-plate-padding: var(--space-2) var(--space-3);
+    --logo-plate-radius:  var(--radius-md);
+  }
+}
+
+
+/* ---------------------------------------------------------------------------
+   4. SCENES — the staging system   [rev. 3]
+
+   A scene is a full-bleed staged passage: the hero, the service scene, the
+   client wall, the closing call.
+
+   SCENES ARE DARK IN BOTH THEMES. These tokens are deliberately NOT redefined
+   under [data-theme="dark"] or the prefers-color-scheme block — they are
+   constants. In the light theme they read as cinematic insets punctuating a
+   light document; in the dark theme they merge with the page ground. Either
+   way the staging, the light and the type colours inside a scene are identical,
+   so a scene only has to be designed and contrast-checked once.
+
+   Contrast inside a scene (ground #0B1219) is fixed and verified:
+     #FFFFFF 18.84:1 · #E8EDF2 15.99:1 · #93A1AE 7.13:1 · #6ECDF7 10.53:1
+   --------------------------------------------------------------------------- */
+:root {
+  --scene-bg:      var(--slate-900);
+  --scene-bg-deep: var(--slate-950);
+  --scene-text:    #FFFFFF;
+  --scene-body:    #E8EDF2;
+  --scene-muted:   #93A1AE;
+  --scene-accent:  var(--blue-300);
+  --scene-rule:    rgb(110 205 247 / 0.16);
+  --scene-panel:   linear-gradient(180deg, #16232D, #0C151D);
+  --scene-edge:    rgb(110 205 247 / 0.55);
+  --scene-focus:   #6ECDF7;   /* focus ring on scene grounds: 10.53:1 */
+}
+
+/* ---------------------------------------------------------------------------
+   5. LIGHT & ATMOSPHERE  [rev. 2 — no longer quarantined]
+   Authored per scene and static. Never cursor-tracking: that is the standard
+   way this effect gets cheapened, and it is the one atmospheric rule kept.
+   --------------------------------------------------------------------------- */
+:root {
+  --light-edge-left: radial-gradient(ellipse 60% 90% at 0% 50%,
+                       rgb(1 128 185 / 0.28) 0%, rgb(1 128 185 / 0.10) 38%, transparent 72%);
+  --light-edge-right: radial-gradient(ellipse 55% 80% at 100% 45%,
+                       rgb(36 183 249 / 0.20) 0%, rgb(1 128 185 / 0.07) 40%, transparent 70%);
+  --light-volumetric: radial-gradient(ellipse 60% 80% at 8% 10%,
+                       rgb(36 183 249 / 0.30) 0%, rgb(1 128 185 / 0.10) 40%, transparent 72%);
+  --light-horizon:    radial-gradient(ellipse 80% 60% at 50% 96%,
+                       rgb(1 128 185 / 0.34) 0%, transparent 68%);
+  --light-vignette:   radial-gradient(ellipse 90% 74% at 50% 46%,
+                       transparent 38%, rgb(2 15 24 / 0.72) 100%);
+
+  /* Below 768px there is no width for a horizontal falloff. */
+  --light-mobile:     linear-gradient(180deg, rgb(1 128 185 / 0.20) 0%, transparent 45%);
+
+  /* Node lighting — the map's signature */
+  --node-glow:        0 0 12px rgb(110 205 247 / 0.55);
+  --node-column:      rgb(110 205 247 / 0.75);
+  --node-dim-opacity: 0.4;
+
+  /* Film grain stops large gradients banding and gives dark grounds substance. */
+  --grain-opacity: 0.05;
+  --grain-size:    3px;
+}
+
+/* ---------------------------------------------------------------------------
+   6. ELEVATION  [rev. 2 — replaces rev. 1's "no shadows" rule]
+   Controlled and short-throw. Elevation encodes interaction state and depth
+   order; it is never ambient decoration. Dark-theme shadows are deeper and
+   more transparent rather than the same values reused.
+   --------------------------------------------------------------------------- */
+:root {
+  --elevation-1: 0 1px 2px rgb(18 23 28 / 0.06);
+  --elevation-2: 0 1px 2px rgb(18 23 28 / 0.06), 0 8px 24px -12px rgb(18 23 28 / 0.14);
+  --elevation-3: 0 2px 4px rgb(18 23 28 / 0.07), 0 16px 40px -18px rgb(18 23 28 / 0.20);
+  --elevation-lift: 0 4px 8px rgb(18 23 28 / 0.08), 0 24px 56px -22px rgb(18 23 28 / 0.26);
+  --elevation-edge: inset 0 1px 0 rgb(255 255 255 / 0.6);   /* light-catching top */
+}
+
+[data-theme="dark"] {
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.5);
+  --elevation-2: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 24px -12px rgb(0 0 0 / 0.75);
+  --elevation-3: 0 2px 4px rgb(0 0 0 / 0.6), 0 18px 44px -18px rgb(0 0 0 / 0.85);
+  --elevation-lift: 0 6px 12px rgb(0 0 0 / 0.6), 0 28px 64px -22px rgb(0 0 0 / 0.9);
+  --elevation-edge: inset 0 1px 0 rgb(110 205 247 / 0.35);  /* lit leading edge */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --elevation-1: 0 1px 2px rgb(0 0 0 / 0.5);
+    --elevation-2: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 24px -12px rgb(0 0 0 / 0.75);
+    --elevation-3: 0 2px 4px rgb(0 0 0 / 0.6), 0 18px 44px -18px rgb(0 0 0 / 0.85);
+    --elevation-lift: 0 6px 12px rgb(0 0 0 / 0.6), 0 28px 64px -22px rgb(0 0 0 / 0.9);
+    --elevation-edge: inset 0 1px 0 rgb(110 205 247 / 0.35);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   7. DEPTH & PERSPECTIVE  [rev. 2 — new]
+   For the map plane (A), the service depth stack (A) and the receding service
+   grid (B).
+   --------------------------------------------------------------------------- */
+:root {
+  --perspective-near:   760px;   /* map plane — strong recession */
+  --perspective-mid:    900px;   /* service grid — shallow tilt */
+  --perspective-origin: 50% 0%;
+
+  --tilt-plane:  58deg;   /* map plane rotateX */
+  --tilt-panel:  3.5deg;  /* service panel rotateY */
+
+  /* Depth stack: active forward, siblings receding. */
+  --depth-1-scale: 1;      --depth-1-opacity: 1;    --depth-1-blur: 0px;
+  --depth-2-scale: 0.93;   --depth-2-opacity: 0.6;  --depth-2-blur: 0.5px;
+  --depth-3-scale: 0.86;   --depth-3-opacity: 0.34; --depth-3-blur: 1.4px;
+
+  /* Parallax rates for the three hero planes. */
+  --parallax-back:  0.15;
+  --parallax-mid:   0.4;
+  --parallax-front: 0.7;
+}
+
+/* ---------------------------------------------------------------------------
+   8. SPACING — 4px base
+   --------------------------------------------------------------------------- */
+:root {
+  --space-0:  0;
+  --space-1:  0.25rem;  --space-2:  0.5rem;   --space-3:  0.75rem;
+  --space-4:  1rem;     --space-5:  1.5rem;   --space-6:  2rem;
+  --space-7:  3rem;     --space-8:  4rem;     --space-9:  6rem;
+  --space-10: 8rem;     --space-11: 12rem;    --space-12: 16rem;
+
+  --grid-columns:   12;
+  --grid-gutter:    var(--space-5);
+  --grid-gutter-lg: var(--space-6);
+  --section-gap:    var(--space-9);
+  --section-gap-lg: var(--space-11);
+}
+
+/* ---------------------------------------------------------------------------
+   9. TYPOGRAPHY
+   One superfamily. The display/body distinction is carried by the WIDTH axis —
+   honest to the signage lineage this descends from (Frutiger's 1968 Roissy
+   commission, derived from Univers, whose defining feature was exactly this).
+   --------------------------------------------------------------------------- */
+:root {
+  --font-family-display: "Archivo Variable", "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-family-body:    "Archivo Variable", "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --font-width-display:   118;
+  --font-width-title:     108;
+  --font-width-body:      100;
+  --font-width-condensed:  88;
+
+  --font-size-xs:   0.75rem;
+  --font-size-sm:   0.875rem;
+  --font-size-base: 1rem;
+  --font-size-md:   clamp(1.0625rem, 0.3vw + 1rem, 1.125rem);
+  --font-size-lg:   clamp(1.25rem, 0.6vw + 1.1rem, 1.5rem);
+  --font-size-xl:   clamp(1.75rem, 1.4vw + 1.4rem, 2.5rem);
+  --font-size-2xl:  clamp(2.25rem, 2.8vw + 1.6rem, 3.75rem);
+  --font-size-3xl:  clamp(2.75rem, 4.6vw + 1.6rem, 5.5rem);
+  --font-size-4xl:  clamp(3.25rem, 7vw + 1.4rem, 8.25rem);
+
+  --font-weight-normal: 400;  --font-weight-medium: 500;
+  --font-weight-semibold: 600; --font-weight-bold: 700;
+
+  --line-height-tight:   1.06;
+  --line-height-snug:    1.2;
+  --line-height-normal:  1.55;
+  --line-height-relaxed: 1.7;
+
+  --letter-spacing-tight: -0.03em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide:   0.14em;
+  --letter-spacing-wider:  0.2em;
+
+  --font-numeric-tabular: "tnum" 1, "lnum" 1;
+}
+
+/* ---------------------------------------------------------------------------
+   10. LAYOUT
+   --------------------------------------------------------------------------- */
+:root {
+  --max-width-prose:   65ch;
+  --max-width-content: 72rem;
+  --max-width-wide:    82.5rem;
+  --max-width-page:    90rem;
+
+  --radius-none: 0;   --radius-sm: 2px;   --radius-md: 4px;
+  --radius-lg:   8px; --radius-full: 9999px;
+
+  --focus-ring-width:  2px;
+  --focus-ring-offset: 2px;
+  --shadow-focus: 0 0 0 var(--focus-ring-offset) var(--color-bg-primary),
+                  0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-border-focus);
+
+  --rule-hairline: 1px;
+  --rule-strong:   2px;
+}
+
+/* ---------------------------------------------------------------------------
+   11. MOTION  [rev. 2 — extended for scene transitions and parallax]
+   Concentrated in high-impact moments: hero, map, service presentation, route
+   change. Everything else is still.
+   --------------------------------------------------------------------------- */
+:root {
+  --duration-instant: 50ms;
+  --duration-fast:    150ms;
+  --duration-normal:  250ms;
+  --duration-slow:    400ms;
+  --duration-slower:  600ms;
+  --duration-scene:   800ms;   /* scene entrance choreography */
+  --duration-map:     1200ms;  /* network ignition, once */
+  --duration-route:   350ms;   /* view transition between routes */
+
+  --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-in:      cubic-bezier(0.4, 0, 1, 1);
+  --easing-out:     cubic-bezier(0, 0, 0.2, 1);
+  --easing-scene:   cubic-bezier(0.16, 1, 0.3, 1);
+  --easing-depth:   cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* No bounce easing. Nothing in an operations business bounces. */
+
+  --stagger-step: 70ms;
+  --scene-lift:   16px;
+  --depth-travel: 24px;   /* z-travel for panels coming forward */
+  --drift-amount: 8px;    /* ambient hero drift */
+  --drift-period: 24s;
+}
+
+/* Motion is a switch, not a dial. Under reduced-motion everything arrives in
+   final state — including the map, which renders fully drawn and fully lit.
+   THIS IS A GATE ON DIRECTION A, not a footnote. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms; --duration-fast: 0ms;   --duration-normal: 0ms;
+    --duration-slow:    0ms; --duration-slower: 0ms; --duration-scene: 0ms;
+    --duration-map:     0ms; --duration-route: 0ms;
+    --stagger-step: 0ms;
+    --scene-lift:   0px;
+    --depth-travel: 0px;
+    --drift-amount: 0px;
+    --parallax-back: 0; --parallax-mid: 0; --parallax-front: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   12. BREAKPOINTS
+   768 is where NetworkMap swaps component (SVG ⇄ CoverageTable), not resizes.
+   --------------------------------------------------------------------------- */
+:root {
+  --breakpoint-sm:  375px;  --breakpoint-md:  768px;  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;  --breakpoint-2xl: 1440px;
+}
+
+/* ---------------------------------------------------------------------------
+   13. COMPONENT TOKENS
+   --------------------------------------------------------------------------- */
+:root {
+  --header-height:    4rem;
+  --header-height-lg: 4.5rem;
+  --header-bg:        color-mix(in srgb, var(--color-bg-primary) 88%, transparent);
+  --header-blur:      blur(10px);
+  --header-border:    var(--color-border-secondary);
+
+  --action-height:    2.75rem;   /* 44px — touch-target floor */
+  --action-height-lg: 3.25rem;
+  --action-padding-x: var(--space-5);
+  --action-radius:    var(--radius-full);
+  --action-letter-spacing: 0.06em;
+
+  --field-height:       3rem;
+  --field-radius:       var(--radius-sm);
+  --field-border:       var(--color-border-primary);
+  --field-border-focus: var(--color-accent-primary);
+  --field-bg:           var(--color-bg-secondary);
+  --field-disabled-opacity: 0.55;   /* the unwired quote form's preview state */
+
+  --map-node-size:        10px;
+  --map-node-size-active: 16px;
+  --map-node-hit:         44px;
+  --map-label-size:       var(--font-size-sm);
+  --map-column-height:    7px;      /* light column in perspective (Direction A) */
+
+  --wall-logo-height:  2.5rem;
+  --wall-logo-opacity: 0.72;
+  --wall-logo-filter:  grayscale(1) contrast(0.9) brightness(1.6);
+  --wall-gap:          var(--space-7);
+
+  --float-contact-size:  3.5rem;
+  --float-contact-inset: var(--space-5);
+}
+
+/* ---------------------------------------------------------------------------
+   14. TAILWIND v4 BRIDGE
+   Semantic names only — components never reference a --blue-* primitive.
+   --------------------------------------------------------------------------- */
+@theme inline {
+  --color-bg:           var(--color-bg-primary);
+  --color-surface:      var(--color-bg-secondary);
+  --color-well:         var(--color-bg-tertiary);
+  --color-ink:          var(--color-text-primary);
+  --color-ink-muted:    var(--color-text-secondary);
+  --color-ink-faint:    var(--color-text-tertiary);
+  --color-link:         var(--color-text-link);
+  --color-accent:       var(--color-accent-primary);
+  --color-accent-hover: var(--color-accent-primary-hover);
+  --color-brand:        var(--color-accent-secondary);
+  --color-rule:         var(--color-border-primary);
+  --color-rule-strong:  var(--color-border-strong);
+  --color-focus:        var(--color-border-focus);
+
+  --font-display: var(--font-family-display);
+  --font-sans:    var(--font-family-body);
+  --font-mono:    var(--font-family-mono);
+
+  --text-xs: var(--font-size-xs);   --text-sm:  var(--font-size-sm);
+  --text-base: var(--font-size-base); --text-md: var(--font-size-md);
+  --text-lg: var(--font-size-lg);   --text-xl:  var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl); --text-3xl: var(--font-size-3xl);
+  --text-4xl: var(--font-size-4xl);
+
+  --shadow-1: var(--elevation-1);
+  --shadow-2: var(--elevation-2);
+  --shadow-3: var(--elevation-3);
+  --shadow-lift: var(--elevation-lift);
+
+  --breakpoint-sm: 375px;  --breakpoint-md: 768px;  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px; --breakpoint-2xl: 1440px;
+
+  --radius-sm: var(--radius-sm);  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);  --radius-full: var(--radius-full);
+
+  --ease-scene:   var(--easing-scene);
+  --ease-depth:   var(--easing-depth);
+  --ease-default: var(--easing-default);
+}
+
+/* ============================================================================
+   WHAT THIS SYSTEM PERMITS AND WHAT IT STILL REFUSES   [rev. 2]
+
+   PERMITTED — restored in rev. 2, previously prohibited:
+     · Layered depth and z-axis composition (§7)
+     · Controlled shadows and elevation (§6)
+     · Perspective and dimensional presentation (§7)
+     · Cinematic scene and route transitions (§11)
+     · Volumetric light, blooms, glow, vignette, grain (§5)
+     · Advanced motion where it serves the story (§11)
+
+   STILL REFUSED — these are the boundaries, not stylistic timidity:
+     · Emerald and turquoise. The accent is the logo's own blue at every step.
+       This is the single hardest line: it is what keeps the work Aéroports
+       Services' rather than a recolour of the reference.
+     · Cursor-tracking light. Light is authored per scene and static.
+     · Bounce easing.
+     · Reproduction of the reference's exact compositions — its rotating
+       three-card service carousel with vertical labels, its vehicle product
+       stage, its monogram.
+     · #0180B9 as body text, in either theme. 4.20–4.50:1 across all grounds.
+     · Any decorative effect that survives the removal test: if taking it away
+       costs the visitor no information and no orientation, it goes.
+
+   THEME DEFAULT: light, with a visible persistent toggle. Decoupled from the
+     visual direction. Scenes stay dark in both themes (§4).
+   ============================================================================ */

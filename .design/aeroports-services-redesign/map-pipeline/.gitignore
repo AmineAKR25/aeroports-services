@@ -1,0 +1,7 @@
+# Downloaded build inputs — reproducible via download_sources.py, never committed.
+france.geojson
+ne50.geojson
+airports.csv
+_v_*.html
+frames_parts.json
+styleframes_full.html
