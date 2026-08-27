@@ -36,8 +36,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# Local source capture only. It contains archived media and credentials copied
-# from the original site and must never be committed to this repository.
+# Local source capture only. Keep the original public-site archive outside Git.
 /reference/
 
 # typescript
