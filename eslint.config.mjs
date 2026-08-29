@@ -11,6 +11,7 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    ".netlify/**",
     "next-env.d.ts",
     // The preserved original-site capture is read-only reference material.
     "reference/**",
