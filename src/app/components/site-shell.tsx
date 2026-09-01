@@ -23,7 +23,7 @@ const navItems = [
   { href: '#partners', label: 'Références' },
   { href: '#contact', label: 'Contact' },
 ]
-const quoteSteps = ['Opération', 'Coordonnées', 'Relecture']
+const quoteSteps = ['Opération', 'Coordonnées', 'Relecture', 'Transmission']
 const heroSlides = [
   {
     src: '/assets/redesign/hero-1.webp',
@@ -99,6 +99,7 @@ export default function SiteShell() {
   const [mapOpen, setMapOpen] = useState(false)
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quoteStep, setQuoteStep] = useState(1)
+  const [quoteDirection, setQuoteDirection] = useState<'forward' | 'back'>('forward')
   const [quote, setQuote] = useState<QuoteForm>(initialQuote)
   const [quoteErrors, setQuoteErrors] = useState<QuoteErrors>({})
   const [launcherErrors, setLauncherErrors] = useState<QuoteErrors>({})
@@ -149,6 +150,28 @@ export default function SiteShell() {
     }, { rootMargin: '-24% 0px -62% 0px', threshold: [0.1, 0.3, 0.6] })
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-section]'))
+    if (sections.length === 0) return
+    document.documentElement.classList.add('motion-ready')
+    if (!('IntersectionObserver' in window)) {
+      sections.forEach((section) => section.classList.add('is-in-view'))
+      return () => {
+        document.documentElement.classList.remove('motion-ready')
+        sections.forEach((section) => section.classList.remove('is-in-view'))
+      }
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => entry.target.classList.toggle('is-in-view', entry.isIntersecting))
+    }, { rootMargin: '-12% 0px -18% 0px', threshold: 0.12 })
+    sections.forEach((section) => observer.observe(section))
+    return () => {
+      observer.disconnect()
+      document.documentElement.classList.remove('motion-ready')
+      sections.forEach((section) => section.classList.remove('is-in-view'))
+    }
   }, [])
 
   useEffect(() => {
@@ -212,10 +235,18 @@ export default function SiteShell() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 800px)')
-    const updateViewport = () => setWideViewport(mediaQuery.matches)
+    const desktopNavigationQuery = window.matchMedia('(min-width: 1040px)')
+    const updateViewport = () => {
+      setWideViewport(mediaQuery.matches)
+      if (desktopNavigationQuery.matches) setMenuOpen(false)
+    }
     updateViewport()
     mediaQuery.addEventListener('change', updateViewport)
-    return () => mediaQuery.removeEventListener('change', updateViewport)
+    desktopNavigationQuery.addEventListener('change', updateViewport)
+    return () => {
+      mediaQuery.removeEventListener('change', updateViewport)
+      desktopNavigationQuery.removeEventListener('change', updateViewport)
+    }
   }, [])
 
   useEffect(() => {
@@ -238,6 +269,7 @@ export default function SiteShell() {
     quoteTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     if (serviceId) setQuoteField('service', serviceId)
     setQuoteStep(1)
+    setQuoteDirection('forward')
     setQuoteErrors({})
     setHandoffPrepared(false)
     setQuoteOpen(true)
@@ -269,8 +301,17 @@ export default function SiteShell() {
       const errors = validateStep(quoteStep)
       if (Object.keys(errors).length > 0) { setQuoteErrors(errors); window.requestAnimationFrame(() => errorSummaryRef.current?.focus()); return }
     }
+    setQuoteDirection(nextStep >= quoteStep ? 'forward' : 'back')
     setQuoteErrors({})
     setQuoteStep(nextStep)
+    window.requestAnimationFrame(() => quoteDialogRef.current?.querySelector<HTMLElement>('.quote-step-title')?.focus())
+  }
+
+  function prepareEmailHandoff() {
+    setHandoffPrepared(true)
+    setQuoteDirection('forward')
+    setQuoteErrors({})
+    setQuoteStep(4)
     window.requestAnimationFrame(() => quoteDialogRef.current?.querySelector<HTMLElement>('.quote-step-title')?.focus())
   }
 
@@ -355,7 +396,7 @@ export default function SiteShell() {
           <button aria-controls="mobile-navigation" aria-expanded={menuOpen} className="menu-button" onClick={() => setMenuOpen((current) => !current)} ref={menuButtonRef} type="button"><span>{menuOpen ? 'Fermer' : 'Menu'}</span><Icon name={menuOpen ? 'close' : 'menu'} size={20} /></button>
         </div>
       </div>
-      <div className={`mobile-navigation${menuOpen ? ' is-open' : ''}`} id="mobile-navigation" ref={mobileNavRef}>
+      <div aria-hidden={!menuOpen} className={`mobile-navigation${menuOpen ? ' is-open' : ''}`} hidden={!menuOpen} id="mobile-navigation" ref={mobileNavRef}>
         <nav aria-label="Navigation mobile" className="shell mobile-nav">
           {navItems.map((item) => <a aria-current={activeSection === item.href.slice(1) ? 'page' : undefined} href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}<Icon name="arrow" size={18} /></a>)}
           <div className="mobile-nav-actions"><a className="button button--secondary" href="tel:+33660475916"><Icon name="phone" size={18} /> Appeler OPS</a><button className="button" onClick={() => { setMenuOpen(false); openQuote() }} type="button">Demander un devis <Icon name="arrow" size={18} /></button></div>
@@ -378,7 +419,7 @@ export default function SiteShell() {
           </div>
           <figure className="hero-media" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHeroPaused(false) }} onFocus={() => setHeroPaused(true)} onMouseEnter={() => setHeroPaused(true)} onMouseLeave={() => setHeroPaused(false)} ref={heroMediaRef}>
             <div aria-live="polite" className="hero-slides">
-              {heroSlides.map((slide, index) => <div aria-hidden={heroIndex !== index} className={`hero-slide${heroIndex === index ? ' is-active' : ''}`} id={`hero-slide-${index + 1}`} key={slide.src}><Image alt={heroIndex === index ? slide.alt : ''} fill loading={index === 0 ? undefined : 'lazy'} priority={index === 0} sizes="(max-width: 799px) 100vw, 52vw" src={slide.src} style={{ objectPosition: slide.position }} /></div>)}
+              {heroSlides.map((slide, index) => <div aria-hidden={heroIndex !== index} className={`hero-slide${heroIndex === index ? ' is-active' : ''}`} id={`hero-slide-${index + 1}`} key={slide.src}><Image alt={heroIndex === index ? slide.alt : ''} fetchPriority={index === 0 ? 'high' : 'auto'} fill loading="eager" sizes="(max-width: 799px) 100vw, 52vw" src={slide.src} style={{ objectPosition: slide.position }} /></div>)}
             </div>
             <figcaption><span>{heroSlides[heroIndex].label}</span><strong>Une équipe qui accompagne chaque passage avec précision.</strong></figcaption>
             <div aria-label="Contrôles des images du message d’accueil" className="hero-media-controls">
@@ -408,7 +449,7 @@ export default function SiteShell() {
         <div className="service-desktop"><div aria-label="Familles de prestations" className="service-tabs" role="tablist">{services.map((service, index) => <button aria-controls={`service-panel-${service.id}`} aria-selected={selectedService === service.id} className={selectedService === service.id ? 'is-selected' : ''} id={`service-tab-${service.id}`} key={service.id} onClick={() => changeService(service.id)} onKeyDown={(event) => handleServiceKeyDown(event, index)} role="tab" tabIndex={selectedService === service.id ? 0 : -1} type="button"><strong>{service.title}</strong><Icon name="arrow" size={18} /></button>)}</div>
           <article aria-labelledby={`service-tab-${activeService.id}`} className={`service-panel service-panel--${serviceDirection}`} id={`service-panel-${activeService.id}`} key={`${activeService.id}-${serviceDirection}`} role="tabpanel"><div className="service-panel-copy"><p className="service-audience">Pour qui · {activeService.audience}</p><h3>{activeService.title}</h3><p>{activeService.scope}</p><ul>{activeService.deliverables.map((item) => <li key={item}><Icon name="check" size={17} />{item}</li>)}</ul><button className="text-button" onClick={() => openQuote(activeService.id)} type="button">Demander cette prestation <Icon name="arrow" size={18} /></button></div><div className="service-panel-media"><Image alt={activeService.imageAlt} fill sizes="40vw" src={activeService.image} style={{ objectPosition: activeService.imagePosition }} /><span>Repère terrain</span></div></article>
         </div>
-        <div className="service-mobile">{services.map((service) => { const expanded = selectedService === service.id; return <article className={expanded ? 'is-expanded' : ''} key={service.id}><h3><button aria-expanded={expanded} aria-controls={`service-accordion-${service.id}`} onClick={() => changeService(service.id)} type="button"><strong>{service.title}</strong><Icon name="chevron" size={19} /></button></h3><div className="service-accordion-panel" id={`service-accordion-${service.id}`}><div><div className="service-mobile-media"><Image alt={service.imageAlt} fill sizes="(max-width: 799px) 100vw" src={service.image} style={{ objectPosition: service.imagePosition }} /></div><p className="service-audience">Pour qui · {service.audience}</p><p>{service.scope}</p><ul>{service.deliverables.map((item) => <li key={item}><Icon name="check" size={17} />{item}</li>)}</ul><button className="text-button" onClick={() => openQuote(service.id)} type="button">Demander cette prestation <Icon name="arrow" size={18} /></button></div></div></article> })}</div>
+        <div className="service-mobile">{services.map((service) => { const expanded = selectedService === service.id; return <article className={expanded ? 'is-expanded' : ''} key={service.id}><h3><button aria-expanded={expanded} aria-controls={`service-accordion-${service.id}`} onClick={() => changeService(service.id)} type="button"><strong>{service.title}</strong><Icon name="chevron" size={19} /></button></h3><div className="service-accordion-panel" id={`service-accordion-${service.id}`}><div>{expanded ? <div className="service-mobile-media"><Image alt={service.imageAlt} fill loading="eager" sizes="(max-width: 799px) 100vw" src={service.image} style={{ objectPosition: service.imagePosition }} /></div> : null}<p className="service-audience">Pour qui · {service.audience}</p><p>{service.scope}</p><ul>{service.deliverables.map((item) => <li key={item}><Icon name="check" size={17} />{item}</li>)}</ul><button className="text-button" onClick={() => openQuote(service.id)} type="button">Demander cette prestation <Icon name="arrow" size={18} /></button></div></div></article> })}</div>
       </div></section>
 
       <section aria-labelledby="coverage-title" className="section coverage-section" data-section="coverage" id="coverage"><div className="shell"><SectionIntro copy="Recherchez les implantations publiées. La carte apporte le contexte géographique ; le répertoire reste la référence complète et accessible." eyebrow="Implantations publiées" id="coverage-title" title="Un réseau national, lieu par lieu." />
@@ -416,26 +457,26 @@ export default function SiteShell() {
           <div aria-label="Filtrer par catégorie" className="category-tabs">{(Object.keys(categoryLabels) as CoverageCategory[]).map((category) => <button aria-pressed={coverageCategory === category} className={coverageCategory === category ? 'is-active' : ''} key={category} onClick={() => chooseCategory(category)} type="button">{getCategoryShape(category)}<span>{categoryLabels[category]}</span><strong>{locations.filter((location) => location.category === category).length}</strong></button>)}</div>
           <div aria-live="polite" className="location-results"><div className="results-meta"><span>{visibleLocations.length} lieux</span><span>{categoryLabels[coverageCategory]}</span></div><div className="location-list">{visibleLocations.length > 0 ? visibleLocations.map((location) => <button aria-current={selectedLocation === location.id ? 'true' : undefined} className={selectedLocation === location.id ? 'is-selected' : ''} id={`location-${location.id}`} key={location.id} onBlur={() => setHighlightedLocation(null)} onClick={() => chooseLocation(location.id)} onFocus={() => setHighlightedLocation(location.id)} onMouseEnter={() => setHighlightedLocation(location.id)} onMouseLeave={() => setHighlightedLocation(null)} type="button">{getCategoryShape(location.category)}<span>{location.name}</span><Icon name="location" size={17} /></button>) : <p className="empty-results">Aucun lieu ne correspond à cette recherche dans la catégorie sélectionnée.</p>}</div></div>
           <button aria-expanded={mapOpen} className="map-toggle" onClick={() => setMapOpen((current) => !current)} type="button">{mapOpen ? 'Masquer la carte' : 'Afficher la carte'} <Icon name="chevron" size={18} /></button>
-        </div><div className={`network-map${mapOpen ? ' is-open' : ''}`}><div className="map-toolbar"><div><span>Vue géographique</span><strong>{categoryLabels[coverageCategory]}</strong></div><div className="map-active"><span className={`category-shape category-shape--${activeLocation.category}`} /><span><small>Sélection</small><strong>{activeLocation.name}</strong></span></div></div>{wideViewport || mapOpen ? <RealMap highlightedLocationId={highlightedLocation} locations={locations} onHighlightLocation={setHighlightedLocation} onSelectLocation={chooseLocation} selectedLocationId={selectedLocation} /> : null}<p className="map-note">Les repères sont provisoires et doivent être validés par l’équipe d’exploitation avant mise en production.</p></div></div>
+        </div><div className={`network-map${mapOpen ? ' is-open' : ''}`}><div className="map-toolbar"><div><span>Vue géographique</span><strong>{categoryLabels[coverageCategory]}</strong></div><div className="map-active"><span className={`category-shape category-shape--${activeLocation.category}`} /><span><small>Sélection</small><strong>{activeLocation.name}</strong></span></div></div>{wideViewport || mapOpen ? <RealMap highlightedLocationId={highlightedLocation} locations={locations} onHighlightLocation={setHighlightedLocation} onSelectLocation={chooseLocation} selectedLocationId={selectedLocation} /> : null}<p className="map-note">Les coordonnées disposent d’un statut de provenance ; les repères provisoires restent à valider par l’équipe d’exploitation avant mise en production.</p></div></div>
       </div></section>
 
       <section aria-labelledby="company-title" className="company-section" data-section="company" id="company"><div className="company-media"><Image alt="Passagers et agents dans un terminal sous la signalétique des départs et arrivées" fill sizes="(max-width: 899px) 100vw, 50vw" src="/assets/photoas11.jpg" /><p><span>Culture de service</span> Personnel expérimenté et multilingue</p></div><div className="company-content"><p className="eyebrow eyebrow--light">Une organisation humaine</p><h2 id="company-title">Le personnel est notre première richesse.</h2><p>Des agents de terrain expérimentés, des responsables opérationnels par zone géographique, une équipe commerciale, un service comptabilité et un service de courses sur Paris et Lyon.</p><div className="process-flow" aria-label="Chaîne de traitement opérationnelle"><div><span>Amont</span><strong>Commande · planning · ramassage · contrôle des vols</strong></div><Icon name="arrow" size={22} /><div><span>Temps réel</span><strong>Comptoir · back office · information aéroports</strong></div><Icon name="arrow" size={22} /><div><span>Aval</span><strong>SAV · suivi commercial · facturation</strong></div></div><p className="company-note"><span className="signal-bar signal-bar--light" />Lien informatique permanent avec les clients, traitement de l’information entrante et sortante en temps réel.</p></div></section>
 
       <section aria-labelledby="history-title" className="section history-section" data-section="history" id="history" ref={historySectionRef}><div className="shell history-layout"><div className="history-heading"><p className="eyebrow">Histoire du groupe</p><h2 id="history-title">Des savoir-faire réunis depuis 1991.</h2><p>Le groupe Aéroports Services naît en 2006 de l’association d’entreprises et du rachat d’Assist Concep et de Bienvenue Airport Services.</p><div className="history-readout"><strong>{history[activeHistoryIndex].year}</strong><span>progression de la chronologie</span></div></div><div className="history-stream-wrap"><div aria-hidden="true" className="history-track"><span style={historyProgressStyle} /></div><ol className="history-timeline">{history.map((item, index) => <li className={activeHistoryIndex === index ? 'is-current' : ''} key={item.year}><span className="history-node" /><time>{item.year}</time><div><strong>{item.title}</strong><p>{item.text}</p></div></li>)}</ol></div></div></section>
 
-      <section aria-labelledby="partners-title" className="section partners-section" data-section="partners" id="partners"><div className="shell"><SectionIntro copy="Marques et références publiées dans les contenus historiques d’Aéroports Services." eyebrow="Clients & partenaires" id="partners-title" title="Une expérience construite avec les acteurs du voyage." /><div aria-label="Clients et partenaires publiés" className={`partner-marquee${marqueeInView && !marqueePaused ? ' is-running' : ''}`} onBlur={() => setMarqueePaused(false)} onFocus={() => setMarqueePaused(true)} onMouseEnter={() => setMarqueePaused(true)} onMouseLeave={() => setMarqueePaused(false)} ref={marqueeRef} tabIndex={0}><div className="partner-track">{marqueeTrack.map((logo) => <figure key={`primary-${logo.name}`}><Image alt={logo.name} height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}{marqueeTrack.map((logo) => <figure aria-hidden="true" key={`loop-${logo.name}`}><Image alt="" height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}</div></div><p className="partner-note">Les logos sont reproduits depuis les références archivées. Leur présence historique ne vaut pas recommandation actuelle.</p></div></section>
+      <section aria-labelledby="partners-title" className="section partners-section" data-section="partners" id="partners"><div className="shell"><SectionIntro copy="Marques et références publiées dans les contenus historiques d’Aéroports Services." eyebrow="Clients & partenaires" id="partners-title" title="Une expérience construite avec les acteurs du voyage." /><div aria-label="Clients et partenaires publiés" className={`partner-marquee${marqueeInView ? ' is-running' : ''}${marqueePaused ? ' is-paused' : ''}`} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setMarqueePaused(false) }} onFocus={() => setMarqueePaused(true)} onMouseEnter={() => setMarqueePaused(true)} onMouseLeave={() => setMarqueePaused(false)} ref={marqueeRef} tabIndex={0}><div className="partner-track">{marqueeTrack.map((logo) => <figure key={`primary-${logo.name}`}><Image alt={logo.name} height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}{marqueeTrack.map((logo) => <figure aria-hidden="true" key={`loop-${logo.name}`}><Image alt="" height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}</div></div><p className="partner-note">Les logos sont reproduits depuis les références archivées. Leur présence historique ne vaut pas recommandation actuelle.</p></div></section>
 
       <section aria-labelledby="contact-title" className="contact-section" data-section="contact" id="contact"><div className="shell contact-layout"><div className="contact-lead"><p className="eyebrow eyebrow--light">Préparer la prochaine opération</p><h2 id="contact-title">Un besoin identifié ? Transmettez le contexte utile dès maintenant.</h2><p>La demande de devis prépare un e-mail complet pour l’équipe Aéroports Services. L’envoi reste sous votre contrôle dans votre messagerie.</p><button className="button button--light" onClick={() => openQuote()} type="button">Commencer la demande <Icon name="arrow" size={18} /></button></div><address className="contact-details"><div><Icon name="phone" size={20} /><span><small>OPS · 24h/24 · 7j/7</small><a href="tel:+33660475916">+33 (6) 60 47 59 16</a></span></div><div><Icon name="phone" size={20} /><span><small>Téléphone</small><a href="tel:+33181871702">+33 (0) 1 81 87 17 02</a></span></div><div><Icon name="mail" size={20} /><span><small>E-mail réservation</small><a href="mailto:resaparis@aeroports-services.com">resaparis@aeroports-services.com</a></span></div><div><Icon name="location" size={20} /><span><small>Siège social</small><a href="https://maps.google.com/?q=2+Rue+Emile+Raspail+91380+Chilly-Mazarin" rel="noreferrer" target="_blank">2 Rue Emile Raspail<br />91380 Chilly-Mazarin</a></span></div></address></div><div className="shell urgent-rule"><strong>Demande à moins de 24 heures</strong><p>Conformément aux conditions publiées, contactez OPS par téléphone avant confirmation par e-mail ou fax.</p><a href="tel:+33660475916">Appeler OPS <Icon name="arrow" size={17} /></a></div></section>
     </main>
 
-    <footer className="site-footer"><div className="shell footer-main"><div className="footer-brand"><div className="footer-logo-plate"><Image alt="Aéroports Services" height={72} src="/assets/logo-aeroports-sevices.png" width={184} /></div><p>Chaque jour, chaque nuit,<br />partout en France.</p></div><div className="footer-links"><span>Navigation</span>{navItems.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</div><div className="footer-links"><span>Contact direct</span><a href="tel:+33660475916">OPS · +33 (6) 60 47 59 16</a><a href="mailto:resaparis@aeroports-services.com">resaparis@aeroports-services.com</a><button onClick={() => openQuote()} type="button">Demander un devis</button></div><div className="footer-links"><span>Informations</span><a href="https://aeroports-services.fr/condition-generale/" rel="noreferrer" target="_blank">Conditions générales</a><a href="https://www.linkedin.com/company-beta/2825395/" rel="noreferrer" target="_blank">LinkedIn</a><span>Fax · +33 (0)1 75 83 43 14</span></div></div><div className="shell footer-bottom"><span>© Aéroports Services</span><span>Réseau français de représentation et d’assistances aéroportuaires</span><span>Document de travail V3</span></div></footer>
+    <footer className="site-footer"><div className="shell footer-main"><div className="footer-brand"><div className="footer-logo-plate"><Image alt="Aéroports Services" height={72} src="/assets/logo-aeroports-sevices.png" width={184} /></div><p>Chaque jour, chaque nuit,<br />partout en France.</p></div><div className="footer-links"><span>Navigation</span>{navItems.map((item) => <a href={item.href} key={item.href}>{item.label}</a>)}</div><div className="footer-links"><span>Contact direct</span><a href="tel:+33660475916">OPS · +33 (6) 60 47 59 16</a><a href="mailto:resaparis@aeroports-services.com">resaparis@aeroports-services.com</a><button onClick={() => openQuote()} type="button">Demander un devis</button></div><div className="footer-links"><span>Informations</span><a href="https://aeroports-services.fr/condition-generale/" rel="noreferrer" target="_blank">Conditions générales</a><a href="https://www.linkedin.com/company-beta/2825395/" rel="noreferrer" target="_blank">LinkedIn</a><span>Fax · +33 (0)1 75 83 43 14</span></div></div><div className="shell footer-bottom"><span>© Aéroports Services</span><span>Réseau français de représentation et d’assistances aéroportuaires</span></div></footer>
 
     <div className="mobile-sticky-actions" aria-label="Actions rapides"><a href="tel:+33660475916"><Icon name="phone" size={18} /><span>Appeler OPS</span></a><button onClick={() => openQuote()} type="button"><span>Demander un devis</span><Icon name="arrow" size={18} /></button></div>
 
     <dialog aria-labelledby="quote-title" className="quote-dialog" onCancel={() => setQuoteOpen(false)} onClose={() => setQuoteOpen(false)} ref={quoteDialogRef}><div className="quote-workspace">
       <header className="quote-header"><div><p>Aéroports Services</p><strong id="quote-title">Demande opérationnelle</strong></div><button aria-label="Fermer la demande" className="icon-button" onClick={() => setQuoteOpen(false)} type="button"><Icon name="close" size={22} /></button></header>
-      <div aria-label={`Étape ${quoteStep} sur 3`} className="quote-progress">{quoteSteps.map((label, index) => { const step = index + 1; return <div className={step === quoteStep ? 'is-active' : step < quoteStep ? 'is-complete' : ''} key={label}><span>{step < quoteStep ? <Icon name="check" size={14} /> : step}</span><small>{label}</small></div> })}</div>
-      <form className="quote-form" noValidate onSubmit={(event) => event.preventDefault()}>
+            <div aria-label={`Étape ${quoteStep} sur 4`} className="quote-progress">{quoteSteps.map((label, index) => { const step = index + 1; return <div className={step === quoteStep ? 'is-active' : step < quoteStep ? 'is-complete' : ''} key={label}><span>{step < quoteStep ? <Icon name="check" size={14} /> : step}</span><small>{label}</small></div> })}</div>
+      <form className={`quote-form quote-form--${quoteDirection}`} noValidate onSubmit={(event) => event.preventDefault()}>
         {Object.keys(quoteErrors).length > 0 ? <div className="error-summary" ref={errorSummaryRef} role="alert" tabIndex={-1}><strong>Vérifiez les informations signalées.</strong><ul>{Object.entries(quoteErrors).map(([field, error]) => <li key={field}><a href={`#quote-${field}`} onClick={() => document.getElementById(`quote-${field}`)?.focus()}>{error}</a></li>)}</ul></div> : null}
         {quoteStep === 1 ? <section aria-labelledby="quote-step-1"><div className="quote-step-heading"><span>Étape 1</span><div><h2 className="quote-step-title" id="quote-step-1" tabIndex={-1}>Contexte de l’opération</h2><p>Les éléments indispensables pour orienter la demande vers la bonne équipe.</p></div></div><div className="form-grid">
           <label><span>Prestation *</span><select id="quote-service" value={quote.service} onChange={(event) => setQuoteField('service', event.target.value)} {...fieldA11y('service', quoteErrors)}><option value="">Choisir</option>{services.map((service) => <option key={service.id} value={service.id}>{service.title}</option>)}</select><FieldError errors={quoteErrors} field="service" /></label>
@@ -455,10 +496,11 @@ export default function SiteShell() {
         </div></section> : null}
         {quoteStep === 3 ? <section aria-labelledby="quote-step-3"><div className="quote-step-heading"><span>Étape 3</span><div><h2 className="quote-step-title" id="quote-step-3" tabIndex={-1}>Relire et préparer l’e-mail</h2><p>Aucune demande n’est envoyée automatiquement depuis ce prototype.</p></div></div><div className="quote-review"><article><span>Opération</span><dl><div><dt>Prestation</dt><dd>{services.find((service) => service.id === quote.service)?.title || 'À préciser'}</dd></div><div><dt>Lieu</dt><dd>{quote.location || 'À préciser'}</dd></div><div><dt>Date locale</dt><dd>{quote.dateTime ? new Date(quote.dateTime).toLocaleString('fr-FR') : 'À préciser'}</dd></div><div><dt>Contexte</dt><dd>{quote.operation || 'À préciser'}</dd></div><div><dt>Passagers</dt><dd>{quote.travelers || 'À préciser'}</dd></div><div><dt>Référence</dt><dd>{quote.reference || 'Non renseignée'}</dd></div></dl></article><article><span>Demandeur</span><dl><div><dt>Organisation</dt><dd>{quote.organization || 'À préciser'}</dd></div><div><dt>Contact</dt><dd>{quote.contactName || 'À préciser'}</dd></div><div><dt>E-mail</dt><dd>{quote.email || 'À préciser'}</dd></div><div><dt>Téléphone</dt><dd>{quote.phone || 'À préciser'}</dd></div></dl></article></div>
           {urgentRequest ? <div className="urgent-notice" role="status"><Icon name="phone" size={20} /><div><strong>Escalade OPS requise pour une demande à moins de 24 heures.</strong><p><a href="tel:+33660475916">Appeler +33 (6) 60 47 59 16</a> avant l’envoi de l’e-mail.</p></div></div> : null}
-          <div className={`handoff-panel${handoffPrepared ? ' is-prepared' : ''}`}><Icon name="mail" size={24} /><div><strong>{handoffPrepared ? 'Le brouillon est prêt à être ouvert.' : 'Dernière étape : ouvrir votre messagerie.'}</strong><p>Un e-mail complet sera prérempli pour resaparis@aeroports-services.com. L’envoi n’est pas automatique et ne vaut pas confirmation opérationnelle.</p></div><a className="button" href={mailtoHref} onClick={() => setHandoffPrepared(true)}>Ouvrir ma messagerie <Icon name="arrow" size={18} /></a></div>
+          <div className="handoff-panel"><Icon name="mail" size={24} /><div><strong>Dernière étape : préparer l’e-mail.</strong><p>Le lien prépare un message complet pour resaparis@aeroports-services.com. Vous devrez encore vérifier puis envoyer ce message dans votre messagerie.</p></div><a className="button" href={mailtoHref} onClick={prepareEmailHandoff}>Préparer et ouvrir l’e-mail <Icon name="arrow" size={18} /></a></div>
         </section> : null}
+        {quoteStep === 4 ? <section aria-labelledby="quote-step-4"><div className="quote-step-heading"><span>Étape 4</span><div><h2 className="quote-step-title" id="quote-step-4" tabIndex={-1}>Transmission à vérifier</h2><p>La demande est préparée ; ce prototype ne peut pas confirmer l’ouverture, l’envoi ou la réception de l’e-mail.</p></div></div><div aria-live="polite" className="handoff-status-list" role="status"><article><span>Demande préparée</span><strong>Confirmée par le site</strong><p>Le contenu de votre demande a été assemblé pour le message de réservation.</p></article><article><span>E-mail envoyé</span><strong>Non vérifiable ici</strong><p>Le lien e-mail a été déclenché. Vérifiez votre messagerie et envoyez le message manuellement.</p></article><article><span>Réception par l’équipe</span><strong>Non vérifiable ici</strong><p>Aucun accusé de réception ou statut de livraison n’est disponible dans ce prototype.</p></article></div><div className={`handoff-panel${handoffPrepared ? ' is-prepared' : ''}`}><Icon name="mail" size={24} /><div><strong>Votre demande est prête à être contrôlée.</strong><p>Une fois l’e-mail vérifié et envoyé depuis votre messagerie, attendez la confirmation de l’équipe Aéroports Services.</p></div><a className="button" href={mailtoHref}>Rouvrir l’e-mail <Icon name="arrow" size={18} /></a></div></section> : null}
       </form>
-      <footer className="quote-footer"><div><small>Étape {quoteStep} sur 3</small><strong>{quoteSteps[quoteStep - 1]}</strong></div><div>{quoteStep > 1 ? <button className="button button--secondary" onClick={() => moveToStep(quoteStep - 1)} type="button">Retour</button> : <button className="button button--secondary quote-cancel" onClick={() => setQuoteOpen(false)} type="button">Annuler</button>}{quoteStep < 3 ? <button className="button" onClick={() => moveToStep(quoteStep + 1)} type="button">Continuer <Icon name="arrow" size={18} /></button> : null}</div></footer>
+      <footer className="quote-footer"><div><small>Étape {quoteStep} sur 4</small><strong>{quoteSteps[quoteStep - 1]}</strong></div><div>{quoteStep > 1 ? <button className="button button--secondary" onClick={() => moveToStep(quoteStep - 1)} type="button">Retour</button> : <button className="button button--secondary quote-cancel" onClick={() => setQuoteOpen(false)} type="button">Annuler</button>}{quoteStep < 3 ? <button className="button" onClick={() => moveToStep(quoteStep + 1)} type="button">Continuer <Icon name="arrow" size={18} /></button> : null}{quoteStep === 4 ? <button className="button" onClick={() => setQuoteOpen(false)} type="button">Fermer</button> : null}</div></footer>
     </div></dialog>
   </>
 }

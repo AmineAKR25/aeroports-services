@@ -204,7 +204,7 @@ On mobile, urgent OPS access, quote start, services, and coverage stay ahead of 
 
 ## Hero Concept: Operational Welcome
 
-The hero is not a carousel and contains no sequence counter.
+~~The hero is not a carousel and contains no sequence counter.~~ **Superseded by the approved V3 amendment:** the hero may use a controlled sequence of supplied images with restrained crossfade controls; it must not introduce a decorative or fake pagination counter.
 
 ### Desktop
 
