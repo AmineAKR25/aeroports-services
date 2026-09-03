@@ -487,7 +487,7 @@ Recorded 29 August 2026 as a refinement of the approved V2 direction. V3 keeps t
 - The real geographic map is now the highest-priority experience. Replace the invented France SVG and percentage-based placement with MapLibre GL JS, a restrained light vector basemap, actual longitude/latitude data, visible attribution, synchronized directory selection, touch-safe markers, keyboard-accessible text fallback, and a documented failure path.
 - Coordinate data must remain separate from presentation, preserve the authentic location spelling and category set, identify any provisional coordinates, and document provider/style and production-hosting considerations.
 - The service image sequence must be derived from the files actually present in `images-redesign`; the user’s `a/b/c/b` notation is ambiguous and must not be silently interpreted as a fourth `d` asset. If only three unique files exist, retain the current fourth image temporarily and report the ambiguity.
-- The final V3 review must explicitly verify map loading/failure behavior, hero controls and timing, reduced motion, mobile directory-first coverage, marquee pausing, quote focus/validation states, responsive overflow, and the unchanged original archive hash.
+- The final V3 review must explicitly verify map loading/failure behavior, hero controls and timing, reduced motion, mobile map-first coverage with a collapsible directory, marquee pausing on hover/focus and hidden-tab states, quote focus/validation states, responsive overflow, and the unchanged original archive hash.
 
 ### Visual and typography
 

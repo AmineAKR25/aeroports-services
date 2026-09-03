@@ -411,7 +411,7 @@ Two observations are deferred as non-blocking Phase 2 polish: the urgent phone n
 
 Phase 2 began in documented order. The responsive header now defers its complete desktop row until 1180 px, preserving the focus-contained drawer and its direct OPS/quote conversion paths through the intermediate range. The existing verified readiness rail, four-service navigator, MapTiler/MapLibre coverage explorer, organisation story, history timeline, quote workspace and contact/footer implementations were retained.
 
-This pass adds a supplied-image, service-language-led Arrivée / Départ / Transit chapter that is linear on narrow screens and uses a readable desktop-only sticky media treatment. It also adds an explicit pause/resume control for the existing partner motion line, tightens the narrow-phone OPS label/number grouping, and keeps only the initial hero image preloaded while later slides remain lazy-loaded.
+This pass adds a supplied-image, service-language-led Arrivée / Départ / Transit chapter that is linear on narrow screens and uses a readable desktop-only sticky media treatment. It also preserves automatic hover/focus and visibility pausing for the partner motion line, tightens the narrow-phone OPS label/number grouping, and keeps only the initial hero image preloaded while later slides remain lazy-loaded.
 
 `npm run lint` and `npm run build` pass after the header slice and the subsequent Phase 2 implementation changes. The in-app browser has no connected session in this workspace, so no new live-interaction claims or screenshots are recorded. Keep the Phase 2 checklist open until desktop/mobile interaction verification is available.
 
@@ -420,7 +420,7 @@ This pass adds a supplied-image, service-language-led Arrivée / Départ / Trans
 The requested live smoke test could not start because the in-app browser has no connected session. No screenshot was created and no live-only result is claimed. The following source-level prototype work was completed without changing the approved visual direction:
 
 - Section-entry motion now uses the shared transform/opacity tokens rather than `clip-path`; grid-row motion remains only for the service accordion disclosure.
-- Hero rotation is gated by viewport visibility, document visibility, manual pause and reduced-motion preference. The partner line now additionally pauses off-screen, on hidden tabs, on hover/focus and through its explicit pause control.
+- Hero rotation is gated by viewport visibility, document visibility, manual pause and reduced-motion preference. The partner line pauses off-screen, on hidden tabs, on hover/focus, and becomes static under reduced motion.
 - The initial hero image remains the only preloaded slide; later slides retain lazy loading. Map code remains dynamically loaded.
 - Existing focus, expanded/selected, error, loading, pause/play, dialog, menu and map-directory state treatments were retained for the future live pass.
 
@@ -435,7 +435,7 @@ The previously unavailable live pass was completed in the Codex in-app Browser a
 - Hero manual navigation changes slides and pauses automatic rotation.
 - The vertical service tablist supports Arrow Up/Down selection. Service changes update the content panel, and `Demander cette prestation` preselects the matching quote service.
 - MapTiler/MapLibre renders the real map. Coverage search, Lyon directory selection, active-map status, camera movement, and popup remain synchronized.
-- The partner-line pause control toggles its pressed state.
+- The partner line pauses on hover/focus and resumes when interaction leaves it; no persistent visible pause control remains.
 - The quote workflow validates required data, advances through operation, requester details, and review, and produces a complete `mailto:` handoff to `resaparis@aeroports-services.com`. No message was sent during verification.
 - The Arrivée / Départ / Transit journey, readiness rail, organisation story, history, contact, and footer render across the tested desktop, tablet, and mobile compositions.
 
@@ -450,3 +450,9 @@ The previously unavailable live pass was completed in the Codex in-app Browser a
 ### Prototype decision
 
 **Phase 2 complete. The frontend prototype is ready for client review.** Formal Phase 4 certification remains separate: exhaustive breakpoint coverage, automated WCAG scanning, zoom/reflow testing, provider-failure simulation, and deployment validation are intentionally deferred and do not block a frontend prototype review.
+
+## Approved Interface Simplification — 3 September 2026
+
+The owner-approved prototype refinement removes the decorative availability bars, the visible partner-marquee pause control, and the historical-logo disclaimer. Automatic marquee safeguards remain active for focus, hover, viewport visibility, hidden tabs, and reduced motion.
+
+Mobile coverage is now map-first: search stays visible, MapTiler/MapLibre renders immediately, and filters plus the complete accessible location directory are disclosed below the map. The former `Afficher la carte` control is removed. Desktop keeps the approved two-column directory/map explorer. Live checks at 375×812 and 1280×800 confirm the new order, disclosure semantics, real-map rendering, and zero horizontal overflow.
