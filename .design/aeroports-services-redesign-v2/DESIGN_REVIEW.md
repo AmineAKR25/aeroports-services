@@ -280,3 +280,173 @@ Primary controls are hydrated and the MapTiler success path is demonstrated in t
 6. operational review of the ten provisional coordinates and production map-provider reliability/licensing policy.
 
 Until the in-app Browser and deployed hosting environment are checked, this build should be described as an **interactive local V3 interface with a locally verified MapTiler coverage map**, not a fully production-approved map integration.
+
+## Phase 1 Cinematic Direction Gate — 2 September 2026
+
+Reviewed against the approved V2/V3 brief, `TASKS.md`, and the new Global VIP Exclusive reference contract. This gate evaluates only the revised hero, one service state, the real-map treatment, and the mobile hero. Phase 2 was not reviewed or started.
+
+### Screenshots captured
+
+| Screenshot | Breakpoint | Description |
+| --- | --- | --- |
+| `screenshots/phase1-direction-hero-desktop-1280.png` | 1280×800 | Desktop hero and quote launcher |
+| `screenshots/phase1-direction-service-desktop-1280.png` | 1280×800 | Selected service and 45/55 media split |
+| `screenshots/phase1-direction-map-desktop-1280.png` | 1280×800 | MapTiler map and synchronized directory |
+| `screenshots/phase1-direction-hero-mobile-375.png` | 375×812 | Mobile header, proof, OPS access, and first media crop |
+
+### Verdict
+
+**Revise Phase 1 once; do not start Phase 2 yet.** The implementation is functionally sound and the existing Aéroports Services palette remains the right choice. The service split is a credible foundation and the real map remains operational. However, the new cinematic direction is not yet strong enough: the page still reads primarily as the previous operational interface with larger typography and media, while the map and mobile hero—the two highest-value visual moments—arrive too late in their sections.
+
+### Must fix before approval
+
+1. **Make the map genuinely map-first.** In `phase1-direction-map-desktop-1280.png`, the title block consumes roughly half the viewport and only the upper part of the map is visible. Compress the eyebrow/title/copy into a shallow introduction band or place it beside the explorer. At 1280×800, users must see a substantial, usable France map and directory immediately after navigating to Coverage. Preserve MapTiler, all 29 locations, clustering, provenance, attribution, fallback, and accessibility behavior.
+2. **Repair the hero control label.** In `phase1-direction-hero-desktop-1280.png`, the central hero-control label is visibly clipped (`COORDINATION CÔ…`) between previous/pause/next controls. Give the label a deliberate responsive width, allow safe truncation with an accessible full name, or remove the duplicate label and keep the caption as the source of truth.
+3. **Bring cinematic media higher on mobile.** In `phase1-direction-hero-mobile-375.png`, the operational hierarchy is clear and there is no horizontal overflow, but the media begins only at the bottom edge of the first viewport and the quote launcher is below it. Reduce vertical consumption in the headline/proof stack while retaining proposition, DGAC, availability, OPS, and the sticky quote action. The first viewport should reveal enough of the image to establish the new direction without copying the reference's cropped desktop behavior.
+
+### Should fix in the same revision
+
+1. **Reduce oversized service introduction space.** `phase1-direction-service-desktop-1280.png` shows a strong selected-state composition, but the large title and generous empty field postpone the service content. Reduce the introduction height so the selected service’s title, meaningful copy, and media are more fully visible at 1280×800.
+2. **Increase media authorship without changing colors.** Keep mineral white, Aéroports blue, navy, and scarce amber. Create more cinematic contrast through crop, scale, edge treatment, and dark navy framing—not through gold, glow, serif display type, gradients, or generic luxury styling.
+3. **Preserve the operational density that works.** The desktop hero successfully exposes the logo, proposition, authorization, availability, OPS contact, image, and quote launcher in one viewport. Do not trade that clarity for a full-screen slogan.
+
+### Interaction checks passed
+
+- Hero previous/next and pause/play controls are present with accessible names and pressed state.
+- Manual next changes the active image and operational caption.
+- Service tab selection changes the selected tab and detail panel.
+- “Demander cette prestation” opens the quote workspace with the chosen service preselected.
+- The MapTiler map renders without browser console errors in the captured state.
+- Desktop and 375 px mobile report zero horizontal overflow.
+
+### Gate status
+
+The three Phase 1 implementation slices are complete, but the visual direction gate remains **open** until the four focused corrections above are recaptured and approved. Phase 2 must remain untouched during that correction pass.
+
+### Focused correction pass — implementation status
+
+Implemented on 2 September 2026 without altering verified content, quote behavior, service data, map data, coordinates, provenance, clustering, MapTiler/MapLibre integration, attribution, failure handling, or the authentic logo.
+
+- Coverage now uses a shallow desktop lead-in and a map-first 40/60 directory/map explorer, so both working surfaces begin immediately after navigating to the section at 1280 px.
+- The duplicate central hero-control text has been removed. The visible image caption remains the untruncated source of truth, while previous/next and pause/play controls retain their full accessible names.
+- At narrow phone widths, the hero uses a shorter top offset, tighter headline/proof/OPS rhythm, and a 282 px media stage so meaningful supplied imagery appears in the first viewport without borrowing the reference’s fixed desktop canvas.
+- Desktop service introduction spacing and heading scale are reduced while preserving the approved 45/55 selected-state composition, directional transition, keyboard tabs, and quote preselection.
+
+`npm run lint` and `npm run build` pass for this correction pass. The Codex browser connector has no available browser session in this workspace, so fresh interaction verification and the four requested captures could not be produced without fabricating evidence. The direction gate remains open pending fresh visual and interaction evidence at 1280, 768, 375, and 320 px. Phase 2 remains untouched.
+
+## Focused Phase 1 Correction Re-review — 2 September 2026
+
+The four requested artistic corrections pass. The desktop hero keeps the operational first-viewport hierarchy while giving documentary media equal authority. The service detail begins earlier and reads as one controlled copy/media experience. Coverage is now genuinely map-first: the directory and a substantial real France map are visible together at 1280×800. The 375 px hero reveals meaningful media in the first viewport without adopting the reference site's fixed desktop canvas.
+
+### Fresh screenshots
+
+| Screenshot | Breakpoint | Description |
+| --- | --- | --- |
+| `screenshots/phase1-revision-hero-desktop-1280.png` | 1280×800 | Revised hero and complete quote launcher |
+| `screenshots/phase1-revision-service-desktop-1280.png` | 1280×800 | Revised service introduction and 45/55 detail panel |
+| `screenshots/phase1-revision-map-desktop-1280.png` | 1280×800 | Revised map-first coverage explorer |
+| `screenshots/phase1-revision-hero-mobile-375.png` | 375×812 | Revised mobile hierarchy and media reveal through `#top` navigation |
+| `screenshots/phase1-revision-homepage-tablet-768.png` | 768×1024 | Tablet hero composition |
+| `screenshots/phase1-revision-homepage-desktop-1280-full.png` | 1280×800 viewport | Full-page desktop capture |
+| `screenshots/phase1-revision-homepage-tablet-768-full.png` | 768×1024 viewport | Full-page tablet capture |
+| `screenshots/phase1-revision-homepage-mobile-375-full.png` | 375×812 viewport | Full-page mobile capture |
+
+### Direction decision
+
+**Art direction accepted; technical gate still open.** Keep the current Aéroports Services palette and the revised hero, service, and map compositions. Do not make another aesthetic redesign before Phase 2.
+
+### Remaining must-fix regressions
+
+1. **Sticky-header anchor clipping.** Hash navigation to `#top`, `#services`, and `#coverage` positions headings beneath the 76–78 px sticky header. The normal homepage URL is positioned correctly, proving this is an anchor-offset defect rather than a composition problem. Add a global scroll-padding/section scroll-margin solution and verify every header navigation destination.
+2. **320 px horizontal overflow.** The page reports 12 px overflow at 320 px. The revised `.hero-media` reaches 332 px and is the source. Keep the cinematic crop but constrain the media/slides to the available mobile shell. Widths 360, 375, 390, 414, 430, 768, and 1280 report zero overflow.
+
+### Functional checks passed
+
+- Hero previous/next changes the active image; manual navigation pauses rotation; pause/play resumes it with the correct pressed state.
+- Service selection updates the selected tab and detail panel.
+- The service quote action opens the workspace with the selected service prefilled.
+- Selecting Lyon updates the directory row, map toolbar, marker state, and popup.
+- MapTiler renders without browser console errors in the reviewed state.
+
+After the two CSS regressions are repaired, repeat only the `#top`, `#services`, and `#coverage` anchor checks at 1280 and 375 px plus the overflow measurement at 320 px. If those pass, mark the Phase 1 direction gate complete and begin Phase 2 without further Phase 1 redesign.
+
+## Phase 1 Gate Repair — 3 September 2026
+
+Implemented only the two scoped CSS repairs; no approved composition, content, image, map, interaction, motion, service, quote, or archive resource was changed.
+
+- `html` now uses the existing responsive `--header-height` token as `scroll-padding-top`, applying the same sticky-header clearance to `#top`, every primary-navigation destination, and other internal fragment targets.
+- `.hero-media`, `.hero-slides`, and `.hero-slide` now have a definite `width: 100%`, `max-width: 100%`, and `min-width: 0`. The approved 282 px narrow-phone media stage, caption, controls, and image-motion rules remain unchanged while the media cannot force the shell wider than the viewport.
+- `npm run lint` and `npm run build` pass.
+- The original archive checksum remains `1df5ae4f0f6e145c900da6dfd8dcddda4e60a31d182522048c0a2133f88f1762` for `reference/original-aeroports-services/archive/aeroports-services-public-capture.zip`.
+
+### Final live verification
+
+Completed in the Codex in-app Browser on 3 September 2026 against `http://127.0.0.1:3000/`.
+
+- Actual header-link navigation was exercised for `#top`, `#services`, `#coverage`, `#company`, `#partners`, and `#contact`. The sticky header measured 78 px on desktop; every destination section landed at 78 px and every target heading remained fully visible below it. At 375 px, the complete hero heading also clears the 76 px mobile header.
+- Widths 320, 360, 375, 390, 414, and 430 px all report `scrollWidth === clientWidth`. At 320 px, `.hero-media` is 288 px wide and remains between the 16 px page gutters.
+- Manual hero navigation changes the active image and pauses automatic rotation as designed.
+- Selecting `Représentation aéroportuaire` updates the service panel, and its quote action opens the workspace with the service value preselected as `representation`.
+- Selecting Lyon updates the coverage directory, active-map label, and MapLibre popup.
+- The 768 px tablet pass reports zero overflow and keeps the complete hero heading below the sticky header.
+- `npm run lint` and `npm run build` both pass after live verification.
+
+### Final gate evidence
+
+| Screenshot | Breakpoint | Description |
+| --- | --- | --- |
+| `screenshots/phase1-gate-final-top-mobile-375.png` | 375×812 | Complete `#top` heading below the sticky header |
+| `screenshots/phase1-gate-final-top-mobile-320.png` | 320×812 | Constrained hero media with zero horizontal overflow |
+| `screenshots/phase1-gate-final-services-desktop-1280.png` | 1280×800 | Complete Services heading after header-link navigation |
+| `screenshots/phase1-gate-final-coverage-desktop-1280.png` | 1280×800 | Complete Coverage heading and map-first explorer after header-link navigation |
+| `screenshots/phase1-gate-final-homepage-tablet-768.png` | 768×1024 | Tablet hero verification |
+
+### Final gate decision
+
+**Phase 1 direction gate complete. Phase 2 may begin.** The gate repair introduces no visual or functional regression in the approved hero, service, map, typography, palette, content, imagery, interaction, or motion direction.
+
+Two observations are deferred as non-blocking Phase 2 polish: the urgent phone number wraps its final digits onto a second line at 320 px, and Next.js reports an LCP advisory when a later hero slide becomes the measured LCP image. Neither affects the repaired acceptance conditions.
+
+## Phase 2 Implementation Start — 3 September 2026
+
+Phase 2 began in documented order. The responsive header now defers its complete desktop row until 1180 px, preserving the focus-contained drawer and its direct OPS/quote conversion paths through the intermediate range. The existing verified readiness rail, four-service navigator, MapTiler/MapLibre coverage explorer, organisation story, history timeline, quote workspace and contact/footer implementations were retained.
+
+This pass adds a supplied-image, service-language-led Arrivée / Départ / Transit chapter that is linear on narrow screens and uses a readable desktop-only sticky media treatment. It also adds an explicit pause/resume control for the existing partner motion line, tightens the narrow-phone OPS label/number grouping, and keeps only the initial hero image preloaded while later slides remain lazy-loaded.
+
+`npm run lint` and `npm run build` pass after the header slice and the subsequent Phase 2 implementation changes. The in-app browser has no connected session in this workspace, so no new live-interaction claims or screenshots are recorded. Keep the Phase 2 checklist open until desktop/mobile interaction verification is available.
+
+## Streamlined Phase 3 / Phase 4 Readiness Pass — 3 September 2026
+
+The requested live smoke test could not start because the in-app browser has no connected session. No screenshot was created and no live-only result is claimed. The following source-level prototype work was completed without changing the approved visual direction:
+
+- Section-entry motion now uses the shared transform/opacity tokens rather than `clip-path`; grid-row motion remains only for the service accordion disclosure.
+- Hero rotation is gated by viewport visibility, document visibility, manual pause and reduced-motion preference. The partner line now additionally pauses off-screen, on hidden tabs, on hover/focus and through its explicit pause control.
+- The initial hero image remains the only preloaded slide; later slides retain lazy loading. Map code remains dynamically loaded.
+- Existing focus, expanded/selected, error, loading, pause/play, dialog, menu and map-directory state treatments were retained for the future live pass.
+
+`npm run lint` and `npm run build` are the final static checks for this pass. Phase 2 is **not** marked complete because its mandated live smoke test, four viewport checks, keyboard pass and console/network inspection remain unavailable. The frontend cannot yet be certified ready for client review until a browser session is connected and that concise smoke test succeeds.
+
+## Final Frontend Prototype Smoke Test — 3 September 2026
+
+The previously unavailable live pass was completed in the Codex in-app Browser against `http://127.0.0.1:3000/`. This section supersedes the browser-blocked status immediately above.
+
+- Responsive rendering reports zero horizontal overflow at 320×812, 375×812, 768×1024, and 1280×800. Hero headings clear the 76–78 px sticky header at every tested width.
+- The desktop navigation is visible at 1280 px. The mobile drawer opens at 375 px, exposes every destination plus OPS and quote actions, locks document scrolling, closes with Escape, and restores focus to Menu.
+- Hero manual navigation changes slides and pauses automatic rotation.
+- The vertical service tablist supports Arrow Up/Down selection. Service changes update the content panel, and `Demander cette prestation` preselects the matching quote service.
+- MapTiler/MapLibre renders the real map. Coverage search, Lyon directory selection, active-map status, camera movement, and popup remain synchronized.
+- The partner-line pause control toggles its pressed state.
+- The quote workflow validates required data, advances through operation, requester details, and review, and produces a complete `mailto:` handoff to `resaparis@aeroports-services.com`. No message was sent during verification.
+- The Arrivée / Départ / Transit journey, readiness rail, organisation story, history, contact, and footer render across the tested desktop, tablet, and mobile compositions.
+
+### Final prototype evidence
+
+| Screenshot | Breakpoint | Description |
+| --- | --- | --- |
+| `screenshots/prototype-final-desktop-1280.png` | 1280×800 | Approved desktop hero and conversion access |
+| `screenshots/prototype-final-map-1280.png` | 1280×800 | Real MapTiler coverage explorer |
+| `screenshots/prototype-final-mobile-menu-375.png` | 375×812 | Accessible mobile navigation and conversion actions |
+
+### Prototype decision
+
+**Phase 2 complete. The frontend prototype is ready for client review.** Formal Phase 4 certification remains separate: exhaustive breakpoint coverage, automated WCAG scanning, zoom/reflow testing, provider-failure simulation, and deployment validation are intentionally deferred and do not block a frontend prototype review.

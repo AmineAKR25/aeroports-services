@@ -17,9 +17,9 @@ type QuoteErrors = Partial<Record<QuoteField, string>>
 
 const initialQuote: QuoteForm = { service: '', location: '', dateTime: '', operation: '', travelers: '', reference: '', urgency: '', organization: '', contactName: '', email: '', phone: '', details: '' }
 const navItems = [
-  { href: '#services', label: 'Prestations' },
+  { href: '#services', label: 'Services' },
   { href: '#coverage', label: 'Couverture' },
-  { href: '#company', label: 'Le groupe' },
+  { href: '#company', label: 'Histoire' },
   { href: '#partners', label: 'Références' },
   { href: '#contact', label: 'Contact' },
 ]
@@ -43,6 +43,12 @@ const heroSlides = [
     position: 'center 43%',
     label: 'Opérations d’escale',
   },
+]
+
+const journeySteps = [
+  { label: 'Arrivée', title: 'Accueillir et orienter dès le point de passage.', text: 'Accueil VIP et accompagnement des groupes, avec un interlocuteur terrain pour la continuité du parcours.' },
+  { label: 'Départ', title: 'Préparer les documents, l’enregistrement et les bagages.', text: 'Une présence en aéroport ou en gare pour que les étapes publiées soient coordonnées avec les équipes présentes.' },
+  { label: 'Transit', title: 'Maintenir le passage lisible quand le programme évolue.', text: 'Gestion des retards, imprévus et réacheminements pour garder le groupe informé pendant l’opération.' },
 ]
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
@@ -108,10 +114,13 @@ export default function SiteShell() {
   const [activeHistoryIndex, setActiveHistoryIndex] = useState(0)
   const [marqueeInView, setMarqueeInView] = useState(false)
   const [marqueePaused, setMarqueePaused] = useState(false)
+  const [marqueeManuallyPaused, setMarqueeManuallyPaused] = useState(false)
   const [wideViewport, setWideViewport] = useState(false)
   const [heroIndex, setHeroIndex] = useState(0)
   const [heroPaused, setHeroPaused] = useState(false)
   const [heroManual, setHeroManual] = useState(false)
+  const [heroInView, setHeroInView] = useState(true)
+  const [documentVisible, setDocumentVisible] = useState(true)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileNavRef = useRef<HTMLDivElement>(null)
   const quoteDialogRef = useRef<HTMLDialogElement>(null)
@@ -235,7 +244,7 @@ export default function SiteShell() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 800px)')
-    const desktopNavigationQuery = window.matchMedia('(min-width: 1040px)')
+    const desktopNavigationQuery = window.matchMedia('(min-width: 1180px)')
     const updateViewport = () => {
       setWideViewport(mediaQuery.matches)
       if (desktopNavigationQuery.matches) setMenuOpen(false)
@@ -250,13 +259,28 @@ export default function SiteShell() {
   }, [])
 
   useEffect(() => {
-    if (heroManual || heroPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const media = heroMediaRef.current
+    if (!media) return
+    const observer = new IntersectionObserver(([entry]) => setHeroInView(entry.isIntersecting), { threshold: 0.2 })
+    observer.observe(media)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const updateVisibility = () => setDocumentVisible(!document.hidden)
+    updateVisibility()
+    document.addEventListener('visibilitychange', updateVisibility)
+    return () => document.removeEventListener('visibilitychange', updateVisibility)
+  }, [])
+
+  useEffect(() => {
+    if (heroManual || heroPaused || !heroInView || !documentVisible || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const rotateHero = () => {
-      if (!document.hidden) setHeroIndex((current) => (current + 1) % heroSlides.length)
+      setHeroIndex((current) => (current + 1) % heroSlides.length)
     }
     const interval = window.setInterval(rotateHero, 6000)
     return () => window.clearInterval(interval)
-  }, [heroManual, heroPaused])
+  }, [documentVisible, heroInView, heroManual, heroPaused])
 
   const setQuoteField = useCallback((field: QuoteField, value: string) => {
     setQuote((current) => ({ ...current, [field]: value }))
@@ -415,16 +439,15 @@ export default function SiteShell() {
               <div><span className="proof-mark">DGAC</span><span><strong>Autorisé pour l’assistance en escale</strong><small>Autorisations nationales</small></span></div>
               <div><span className="availability-mark availability-mark--large" /><span><strong>Disponible 24h/24 · 7j/7</strong><small>Toute l’année</small></span></div>
             </div>
-            <a className="urgent-call" href="tel:+33660475916"><Icon name="phone" size={19} /><span><small>Besoin opérationnel urgent</small><strong>Appeler OPS · +33 (6) 60 47 59 16</strong></span><Icon name="arrow" size={18} /></a>
+            <a className="urgent-call" href="tel:+33660475916"><Icon name="phone" size={19} /><span><small>Besoin opérationnel urgent</small><strong><span>Appeler OPS</span><span className="urgent-phone-number">+33 (6) 60 47 59 16</span></strong></span><Icon name="arrow" size={18} /></a>
           </div>
           <figure className="hero-media" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHeroPaused(false) }} onFocus={() => setHeroPaused(true)} onMouseEnter={() => setHeroPaused(true)} onMouseLeave={() => setHeroPaused(false)} ref={heroMediaRef}>
             <div aria-live="polite" className="hero-slides">
-              {heroSlides.map((slide, index) => <div aria-hidden={heroIndex !== index} className={`hero-slide${heroIndex === index ? ' is-active' : ''}`} id={`hero-slide-${index + 1}`} key={slide.src}><Image alt={heroIndex === index ? slide.alt : ''} fetchPriority={index === 0 ? 'high' : 'auto'} fill loading="eager" sizes="(max-width: 799px) 100vw, 52vw" src={slide.src} style={{ objectPosition: slide.position }} /></div>)}
+              {heroSlides.map((slide, index) => <div aria-hidden={heroIndex !== index} className={`hero-slide${heroIndex === index ? ' is-active' : ''}`} id={`hero-slide-${index + 1}`} key={slide.src}><Image alt={heroIndex === index ? slide.alt : ''} fill loading={index === 0 ? undefined : 'lazy'} preload={index === 0} sizes="(max-width: 799px) 100vw, 52vw" src={slide.src} style={{ objectPosition: slide.position }} /></div>)}
             </div>
             <figcaption><span>{heroSlides[heroIndex].label}</span><strong>Une équipe qui accompagne chaque passage avec précision.</strong></figcaption>
             <div aria-label="Contrôles des images du message d’accueil" className="hero-media-controls">
               <button aria-label="Image précédente" onClick={() => moveHeroSlide(-1)} type="button"><Icon name="arrow" size={17} /></button>
-              <div aria-label="Choisir une image" className="hero-slide-picker" role="group">{heroSlides.map((slide, index) => <button aria-label={`Afficher l’image ${index + 1} — ${slide.label}`} aria-pressed={heroIndex === index} className={heroIndex === index ? 'is-active' : ''} key={slide.src} onClick={() => selectHeroSlide(index)} type="button"><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span></button>)}</div>
               <button aria-label={heroManual || heroPaused ? 'Reprendre la rotation des images' : 'Mettre la rotation des images en pause'} aria-pressed={heroManual || heroPaused} onClick={toggleHeroRotation} type="button"><Icon name={heroManual || heroPaused ? 'play' : 'pause'} size={16} /></button>
               <button aria-label="Image suivante" onClick={() => moveHeroSlide(1)} type="button"><Icon name="arrow" size={17} /></button>
             </div>
@@ -447,7 +470,7 @@ export default function SiteShell() {
 
       <section aria-labelledby="services-title" className="section services-section" data-section="services" id="services"><div className="shell"><SectionIntro copy="Quatre familles de services issues du métier historique d’Aéroports Services. Sélectionnez un besoin pour vérifier son périmètre." eyebrow="Prestations" id="services-title" title="Le bon dispositif pour chaque passage." />
         <div className="service-desktop"><div aria-label="Familles de prestations" className="service-tabs" role="tablist">{services.map((service, index) => <button aria-controls={`service-panel-${service.id}`} aria-selected={selectedService === service.id} className={selectedService === service.id ? 'is-selected' : ''} id={`service-tab-${service.id}`} key={service.id} onClick={() => changeService(service.id)} onKeyDown={(event) => handleServiceKeyDown(event, index)} role="tab" tabIndex={selectedService === service.id ? 0 : -1} type="button"><strong>{service.title}</strong><Icon name="arrow" size={18} /></button>)}</div>
-          <article aria-labelledby={`service-tab-${activeService.id}`} className={`service-panel service-panel--${serviceDirection}`} id={`service-panel-${activeService.id}`} key={`${activeService.id}-${serviceDirection}`} role="tabpanel"><div className="service-panel-copy"><p className="service-audience">Pour qui · {activeService.audience}</p><h3>{activeService.title}</h3><p>{activeService.scope}</p><ul>{activeService.deliverables.map((item) => <li key={item}><Icon name="check" size={17} />{item}</li>)}</ul><button className="text-button" onClick={() => openQuote(activeService.id)} type="button">Demander cette prestation <Icon name="arrow" size={18} /></button></div><div className="service-panel-media"><Image alt={activeService.imageAlt} fill sizes="40vw" src={activeService.image} style={{ objectPosition: activeService.imagePosition }} /><span>Repère terrain</span></div></article>
+          <article aria-labelledby={`service-tab-${activeService.id}`} className={`service-panel service-panel--${serviceDirection}`} id={`service-panel-${activeService.id}`} key={`${activeService.id}-${serviceDirection}`} role="tabpanel"><div className="service-panel-copy"><p className="service-audience">Prestation {activeService.index} · Pour qui · {activeService.audience}</p><h3>{activeService.title}</h3><p>{activeService.scope}</p><ul>{activeService.deliverables.map((item) => <li key={item}><Icon name="check" size={17} />{item}</li>)}</ul><button className="text-button" onClick={() => openQuote(activeService.id)} type="button">Demander cette prestation <Icon name="arrow" size={18} /></button></div><div className="service-panel-media"><Image alt={activeService.imageAlt} fill sizes="55vw" src={activeService.image} style={{ objectPosition: activeService.imagePosition }} /><span>Dispositif terrain · {activeService.index}</span></div></article>
         </div>
         <div className="service-mobile">{services.map((service) => { const expanded = selectedService === service.id; return <article className={expanded ? 'is-expanded' : ''} key={service.id}><h3><button aria-expanded={expanded} aria-controls={`service-accordion-${service.id}`} onClick={() => changeService(service.id)} type="button"><strong>{service.title}</strong><Icon name="chevron" size={19} /></button></h3><div className="service-accordion-panel" id={`service-accordion-${service.id}`}><div>{expanded ? <div className="service-mobile-media"><Image alt={service.imageAlt} fill loading="eager" sizes="(max-width: 799px) 100vw" src={service.image} style={{ objectPosition: service.imagePosition }} /></div> : null}<p className="service-audience">Pour qui · {service.audience}</p><p>{service.scope}</p><ul>{service.deliverables.map((item) => <li key={item}><Icon name="check" size={17} />{item}</li>)}</ul><button className="text-button" onClick={() => openQuote(service.id)} type="button">Demander cette prestation <Icon name="arrow" size={18} /></button></div></div></article> })}</div>
       </div></section>
@@ -460,11 +483,17 @@ export default function SiteShell() {
         </div><div className={`network-map${mapOpen ? ' is-open' : ''}`}><div className="map-toolbar"><div><span>Vue géographique</span><strong>{categoryLabels[coverageCategory]}</strong></div><div className="map-active"><span className={`category-shape category-shape--${activeLocation.category}`} /><span><small>Sélection</small><strong>{activeLocation.name}</strong></span></div></div>{wideViewport || mapOpen ? <RealMap highlightedLocationId={highlightedLocation} locations={locations} onHighlightLocation={setHighlightedLocation} onSelectLocation={chooseLocation} selectedLocationId={selectedLocation} /> : null}<p className="map-note">Les coordonnées disposent d’un statut de provenance ; les repères provisoires restent à valider par l’équipe d’exploitation avant mise en production.</p></div></div>
       </div></section>
 
+      <section aria-labelledby="journey-title" className="section journey-section" data-section="journey" id="journey"><div className="shell journey-layout">
+        <div className="journey-heading"><p className="eyebrow">Continuité opérationnelle</p><h2 id="journey-title">Une même présence avant, pendant et après le passage.</h2><p>Les prestations publiées se coordonnent selon le moment du déplacement, sans imposer un parcours identique à chaque opération.</p></div>
+        <div className="journey-steps"><ol>{journeySteps.map((step, index) => <li key={step.label}><span>{String(index + 1).padStart(2, '0')}</span><div><p>{step.label}</p><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></div>
+        <figure className="journey-media"><Image alt="Agente accompagnant une passagère dans un terminal" fill sizes="(max-width: 799px) 100vw, 34vw" src="/assets/redesign/service-b.webp" style={{ objectPosition: '50% center' }} /><figcaption>Un repère humain à chaque étape publiée.</figcaption></figure>
+      </div></section>
+
       <section aria-labelledby="company-title" className="company-section" data-section="company" id="company"><div className="company-media"><Image alt="Passagers et agents dans un terminal sous la signalétique des départs et arrivées" fill sizes="(max-width: 899px) 100vw, 50vw" src="/assets/photoas11.jpg" /><p><span>Culture de service</span> Personnel expérimenté et multilingue</p></div><div className="company-content"><p className="eyebrow eyebrow--light">Une organisation humaine</p><h2 id="company-title">Le personnel est notre première richesse.</h2><p>Des agents de terrain expérimentés, des responsables opérationnels par zone géographique, une équipe commerciale, un service comptabilité et un service de courses sur Paris et Lyon.</p><div className="process-flow" aria-label="Chaîne de traitement opérationnelle"><div><span>Amont</span><strong>Commande · planning · ramassage · contrôle des vols</strong></div><Icon name="arrow" size={22} /><div><span>Temps réel</span><strong>Comptoir · back office · information aéroports</strong></div><Icon name="arrow" size={22} /><div><span>Aval</span><strong>SAV · suivi commercial · facturation</strong></div></div><p className="company-note"><span className="signal-bar signal-bar--light" />Lien informatique permanent avec les clients, traitement de l’information entrante et sortante en temps réel.</p></div></section>
 
       <section aria-labelledby="history-title" className="section history-section" data-section="history" id="history" ref={historySectionRef}><div className="shell history-layout"><div className="history-heading"><p className="eyebrow">Histoire du groupe</p><h2 id="history-title">Des savoir-faire réunis depuis 1991.</h2><p>Le groupe Aéroports Services naît en 2006 de l’association d’entreprises et du rachat d’Assist Concep et de Bienvenue Airport Services.</p><div className="history-readout"><strong>{history[activeHistoryIndex].year}</strong><span>progression de la chronologie</span></div></div><div className="history-stream-wrap"><div aria-hidden="true" className="history-track"><span style={historyProgressStyle} /></div><ol className="history-timeline">{history.map((item, index) => <li className={activeHistoryIndex === index ? 'is-current' : ''} key={item.year}><span className="history-node" /><time>{item.year}</time><div><strong>{item.title}</strong><p>{item.text}</p></div></li>)}</ol></div></div></section>
 
-      <section aria-labelledby="partners-title" className="section partners-section" data-section="partners" id="partners"><div className="shell"><SectionIntro copy="Marques et références publiées dans les contenus historiques d’Aéroports Services." eyebrow="Clients & partenaires" id="partners-title" title="Une expérience construite avec les acteurs du voyage." /><div aria-label="Clients et partenaires publiés" className={`partner-marquee${marqueeInView ? ' is-running' : ''}${marqueePaused ? ' is-paused' : ''}`} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setMarqueePaused(false) }} onFocus={() => setMarqueePaused(true)} onMouseEnter={() => setMarqueePaused(true)} onMouseLeave={() => setMarqueePaused(false)} ref={marqueeRef} tabIndex={0}><div className="partner-track">{marqueeTrack.map((logo) => <figure key={`primary-${logo.name}`}><Image alt={logo.name} height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}{marqueeTrack.map((logo) => <figure aria-hidden="true" key={`loop-${logo.name}`}><Image alt="" height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}</div></div><p className="partner-note">Les logos sont reproduits depuis les références archivées. Leur présence historique ne vaut pas recommandation actuelle.</p></div></section>
+      <section aria-labelledby="partners-title" className="section partners-section" data-section="partners" id="partners"><div className="shell"><SectionIntro copy="Marques et références publiées dans les contenus historiques d’Aéroports Services." eyebrow="Clients & partenaires" id="partners-title" title="Une expérience construite avec les acteurs du voyage." /><div aria-label="Clients et partenaires publiés" className={`partner-marquee${marqueeInView ? ' is-running' : ''}${marqueePaused || marqueeManuallyPaused || !documentVisible ? ' is-paused' : ''}`} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setMarqueePaused(false) }} onFocus={() => setMarqueePaused(true)} onMouseEnter={() => setMarqueePaused(true)} onMouseLeave={() => setMarqueePaused(false)} ref={marqueeRef} tabIndex={0}><div className="partner-track">{marqueeTrack.map((logo) => <figure key={`primary-${logo.name}`}><Image alt={logo.name} height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}{marqueeTrack.map((logo) => <figure aria-hidden="true" key={`loop-${logo.name}`}><Image alt="" height={100} sizes="(max-width: 720px) 32vw, 170px" src={logo.src} width={220} /></figure>)}</div></div><div className="partner-controls"><button aria-pressed={marqueeManuallyPaused} className="text-button" onClick={() => setMarqueeManuallyPaused((current) => !current)} type="button">{marqueeManuallyPaused ? 'Reprendre le défilement' : 'Mettre le défilement en pause'} <Icon name={marqueeManuallyPaused ? 'play' : 'pause'} size={17} /></button></div><p className="partner-note">Les logos sont reproduits depuis les références archivées. Leur présence historique ne vaut pas recommandation actuelle.</p></div></section>
 
       <section aria-labelledby="contact-title" className="contact-section" data-section="contact" id="contact"><div className="shell contact-layout"><div className="contact-lead"><p className="eyebrow eyebrow--light">Préparer la prochaine opération</p><h2 id="contact-title">Un besoin identifié ? Transmettez le contexte utile dès maintenant.</h2><p>La demande de devis prépare un e-mail complet pour l’équipe Aéroports Services. L’envoi reste sous votre contrôle dans votre messagerie.</p><button className="button button--light" onClick={() => openQuote()} type="button">Commencer la demande <Icon name="arrow" size={18} /></button></div><address className="contact-details"><div><Icon name="phone" size={20} /><span><small>OPS · 24h/24 · 7j/7</small><a href="tel:+33660475916">+33 (6) 60 47 59 16</a></span></div><div><Icon name="phone" size={20} /><span><small>Téléphone</small><a href="tel:+33181871702">+33 (0) 1 81 87 17 02</a></span></div><div><Icon name="mail" size={20} /><span><small>E-mail réservation</small><a href="mailto:resaparis@aeroports-services.com">resaparis@aeroports-services.com</a></span></div><div><Icon name="location" size={20} /><span><small>Siège social</small><a href="https://maps.google.com/?q=2+Rue+Emile+Raspail+91380+Chilly-Mazarin" rel="noreferrer" target="_blank">2 Rue Emile Raspail<br />91380 Chilly-Mazarin</a></span></div></address></div><div className="shell urgent-rule"><strong>Demande à moins de 24 heures</strong><p>Conformément aux conditions publiées, contactez OPS par téléphone avant confirmation par e-mail ou fax.</p><a href="tel:+33660475916">Appeler OPS <Icon name="arrow" size={17} /></a></div></section>
     </main>
